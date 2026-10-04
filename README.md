@@ -21,6 +21,25 @@ npm run dev
 
 Vercel baut die App bei jedem Push auf GitHub automatisch neu. Die Variablen aus `.env.example` müssen dort unter Settings → Environment Variables eingetragen sein. Die Server-Region Frankfurt steht in `vercel.json`.
 
+## Einstellungen im Supabase-Dashboard
+
+Diese Einstellungen stehen nicht im Code, sondern werden im Supabase-Dashboard gemacht:
+
+- **Authentication → Emails → Templates:** Die Vorlagen „Confirm signup“ und „Magic Link“ enthalten den Login-Code und einen Link (Text unten). Ohne diese Änderung steht kein Code in der Mail.
+- **Authentication → URL Configuration:** Site URL = Adresse der App bei Vercel. Redirect URLs = `http://localhost:3000/**` und `https://<adresse-bei-vercel>/**`.
+- **Authentication → Sign In / Providers:** „Allow new users to sign up“ ist ausgeschaltet, damit sich niemand Fremdes registrieren kann.
+- Der eingebaute Mailversand von Supabase schickt nur an Adressen aus dem eigenen Supabase-Team und höchstens 2 Mails pro Stunde.
+
+Betreff beider Vorlagen: `Dein Code fürs Küchenbuch`. Inhalt:
+
+```html
+<h2>Dein Code fürs Küchenbuch</h2>
+<p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">{{ .Token }}</p>
+<p>Tippe den Code in der App ein. Oder melde dich direkt über diesen Link an:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Jetzt anmelden</a></p>
+<p>Wenn du das nicht angefordert hast, kannst du diese Mail ignorieren.</p>
+```
+
 ## Weitere Befehle
 
 | Befehl | Was er tut |
