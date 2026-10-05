@@ -8,6 +8,14 @@ Handy-App (PWA) für meinen Vorrat mit Ablaufdaten, Scannen, KI-Kochvorschlägen
 
 Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Login, Fotos) · Gemini API (kostenloses Kontingent, nur vom Server aufgerufen) · Open Food Facts · Hosting auf Vercel (Hobby). Details und Datenmodell stehen in der SPEC unter „Technik“.
 
+## Infrastruktur (Stand Phase 0)
+
+- Live: https://kuechenbuch-six.vercel.app · GitHub: falify1212431/kuechenbuch (privat) · Vercel-Projekt `essens-app/kuechenbuch` (Hobby), jeder Push auf `main` wird automatisch veröffentlicht
+- Supabase-Projekt `swqapqhrhyxsarzfrzci` (Free, Region eu-west-1/Irland), deshalb Vercel-Region `dub1` in `vercel.json`
+- Vercel-CLI und Supabase-CLI sind auf meinem PC angemeldet (`npx vercel …`, `npx supabase …`)
+- Login: nur Link per Mail (PKCE, gleicher Browser nötig), max. 2 Mails pro Stunde, nur an die Adresse meines Supabase-Kontos; neue Registrierungen sind abgeschaltet
+- Ich nutze die App in Samsung Internet; Installieren aufs Homescreen klappt auf meinem S25 nicht (Geräteproblem, nicht die App)
+
 ## Befehle
 
 - `npm run dev`: App lokal starten (http://localhost:3000)

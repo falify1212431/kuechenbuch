@@ -230,11 +230,11 @@ Acht Phasen (0–7), jede endet mit einer App, die ich wirklich benutzen kann. E
 
 ### Phase 0 – Fundament
 
-- [ ] Projekt aufgesetzt (Next.js, TypeScript, Tailwind, Supabase), Git-Repo, `CLAUDE.md` mit Projektregeln
-- [ ] Login per E-Mail-Link funktioniert
-- [ ] App lässt sich am Handy aufs Homescreen installieren (PWA-Manifest, Icon)
-- [ ] Online erreichbar (Vercel), Umgebungsvariablen dokumentiert in `.env.example`
-- [ ] Alle Dienste laufen in kostenlosen Stufen, keine Zahlungsdaten hinterlegt
+- [x] Projekt aufgesetzt (Next.js, TypeScript, Tailwind, Supabase), Git-Repo, `CLAUDE.md` mit Projektregeln
+- [x] Login per E-Mail-Link funktioniert (nur Link, kein Code: Mail-Vorlagen lassen sich ohne eigenes SMTP nicht ändern; der Link klappt nur im selben Browser, in dem er angefordert wurde)
+- [x] App lässt sich am Handy aufs Homescreen installieren (PWA-Manifest, Icon) – technisch erfüllt, Knopf „App installieren“ eingebaut; auf dem Samsung S25 bieten Chrome und Samsung Internet das Ablegen auf dem Startbildschirm nicht an (auch bei anderen Web-Apps), daher vorerst über „Quick access“ in Samsung Internet
+- [x] Online erreichbar (Vercel), Umgebungsvariablen dokumentiert in `.env.example`
+- [x] Alle Dienste laufen in kostenlosen Stufen, keine Zahlungsdaten hinterlegt (Vercel Hobby, Supabase Free, geprüft am 05.10.2026)
 
 ### Phase 1 – Vorrat & Einkaufsliste (ohne KI)
 
