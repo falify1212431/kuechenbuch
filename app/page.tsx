@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { InstallButton } from "./install-button";
 import { logout } from "./login/actions";
 
 export default async function Home() {
@@ -18,6 +19,7 @@ export default async function Home() {
       <p className="text-stone-600 dark:text-stone-400">
         Hier entsteht deine Küchen-App: Vorrat, Kochideen und Einkaufsliste an einem Ort.
       </p>
+      <InstallButton />
       <form action={logout}>
         <button
           type="submit"
