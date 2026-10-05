@@ -16,6 +16,15 @@ Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Log
 - Login: nur Link per Mail (PKCE, gleicher Browser nötig), max. 2 Mails pro Stunde, nur an die Adresse meines Supabase-Kontos; neue Registrierungen sind abgeschaltet
 - Ich nutze die App in Samsung Internet; Installieren aufs Homescreen klappt auf meinem S25 nicht (Geräteproblem, nicht die App)
 
+## Code-Struktur
+
+- `app/(app)/…`: Bereiche nach dem Login (vorrat, einkauf, einstellungen) mit Navigationsleiste; `actions.ts` je Bereich = Server-Aktionen, Eingaben mit zod geprüft
+- `app/login`, `app/auth/confirm`: Login per Mail-Link; `proxy.ts` schützt alle anderen Seiten
+- `lib/` reine Logik mit Tests daneben (`*.test.ts`): `dates`, `pantry/` (Ablauf, Schätzung, Mengen, Gruppierung), `shopping/`, `order`, `text`
+- `lib/data/`: Laden aus Supabase (`loadBasics` legt beim ersten Besuch die Startwerte per `ensure_defaults()` an)
+- `supabase/migrations/`: Datenbank-Änderungen als SQL; übertragen mit `npm run db:push`, danach `npm run db:types`
+- `components/styles.ts`: gemeinsame Tailwind-Klassen (keine UI-Bibliothek)
+
 ## Befehle
 
 - `npm run dev`: App lokal starten (http://localhost:3000)

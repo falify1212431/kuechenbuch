@@ -183,11 +183,11 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 
 | Tabelle | Wichtige Felder |
 | --- | --- |
-| `pantry_items` | name, brand, quantity, unit, category_id, location_id, date, date_type (`mhd` / `verbrauch` / `geschaetzt`), opened_at, barcode, photo_path, status (`da` / `verbraucht` / `weggeworfen`), allergen_warning, created_at |
+| `pantry_items` | name, brand, quantity, unit, category_id, location_id, date, date_type (`mhd` / `verbrauch`), date_estimated (ja/nein, entschieden in Phase 1), opened_at, barcode, photo_path, status (`da` / `verbraucht` / `weggeworfen`), status_changed_at, allergen_warning, created_at |
 | `products` | barcode, name, brand, default_category_id, image_url, allergens[], traces[], source (`off` / `ki` / `manuell`) – Cache für Barcode-Treffer |
-| `categories` / `locations` | name, sort_order, icon |
-| `shelf_life_rules` | category_id oder Schlagwort, days_closed, days_opened, location – für Schätzungen |
-| `shopping_items` | name, quantity, unit, category_id, checked, source (`hand` / `plan` / `rezept` / `angebot`), offer_id |
+| `categories` / `locations` | name, sort_order, icon; Kategorien zusätzlich default_location_id (typischer Lagerort) und aisle_order (Laden-Reihenfolge) |
+| `shelf_life_rules` | category_id, location_id und/oder keyword, days_closed, days_opened – für Schätzungen; die genaueste passende Regel gewinnt |
+| `shopping_items` | name, quantity, unit, category_id, checked, source (`hand` / `nachkaufen` / `plan` / `rezept` / `angebot`), offer_id |
 | `recipes` | title, servings, minutes, ingredients (JSON), steps (JSON), source (`ki` / `manuell`), rating, favorite |
 | `meal_plan` | date, slot (`mittag` / `abend`), recipe_id oder freier Text, cooked |
 | `stores` / `offers` | store, product, brand, price, unit_price, discount, valid_from, valid_to, flyer_upload_id |
@@ -238,12 +238,12 @@ Acht Phasen (0–7), jede endet mit einer App, die ich wirklich benutzen kann. E
 
 ### Phase 1 – Vorrat & Einkaufsliste (ohne KI)
 
-- [ ] Vorrat anlegen, bearbeiten, verbrauchen, wegwerfen; gruppiert nach Kategorie, umschaltbar auf Lagerort und Ablaufdatum
-- [ ] Ablauf-Status in Farben + Leiste „heute fällig / bald fällig“
-- [ ] MHD vs. Verbrauchsdatum, „Geöffnet“ verkürzt die Haltbarkeit
-- [ ] Haltbarkeits-Schätzung nach Kategorie/Schlagwort, wenn kein Datum eingegeben wird
-- [ ] Einkaufsliste nach Laden-Reihenfolge sortiert, abhaken, „Einräumen“ in den Vorrat
-- [ ] Kategorien und Lagerorte in den Einstellungen bearbeitbar
+- [x] Vorrat anlegen, bearbeiten, verbrauchen, wegwerfen; gruppiert nach Kategorie, umschaltbar auf Lagerort und Ablaufdatum
+- [x] Ablauf-Status in Farben + Leiste „heute fällig / bald fällig“
+- [x] MHD vs. Verbrauchsdatum, „Geöffnet“ verkürzt die Haltbarkeit
+- [x] Haltbarkeits-Schätzung nach Kategorie/Schlagwort, wenn kein Datum eingegeben wird
+- [x] Einkaufsliste nach Laden-Reihenfolge sortiert, abhaken, „Einräumen“ in den Vorrat
+- [x] Kategorien und Lagerorte in den Einstellungen bearbeitbar
 
 ### Phase 2 – Scannen
 
