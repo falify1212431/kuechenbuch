@@ -59,6 +59,15 @@ export function PantryList({
                   <span className={`size-3 shrink-0 rounded-full ${levelDot[entry.level]}`} aria-hidden />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">
+                      {entry.allergenWarning === "erdnuss" && (
+                        <span className="mr-1 rounded bg-red-600 px-1 text-xs font-bold text-white">ERDNUSS</span>
+                      )}
+                      {entry.allergenWarning === "spuren" && (
+                        <span className="mr-1 rounded bg-amber-400 px-1 text-xs font-bold text-amber-950">Spuren</span>
+                      )}
+                      {entry.allergenWarning === "ungeprueft" && (
+                        <span className="mr-1 rounded bg-sky-100 px-1 text-xs text-sky-900 dark:bg-sky-900 dark:text-sky-100">ungeprüft</span>
+                      )}
                       {entry.name}
                       {entry.brand && <span className="font-normal text-stone-500"> · {entry.brand}</span>}
                     </span>

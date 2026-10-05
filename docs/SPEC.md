@@ -171,7 +171,7 @@ Die Handy-App spricht nur mit dem eigenen Server; der Server ruft Supabase, den 
 | Oberfläche | Tailwind CSS, Komponenten selbst gebaut oder shadcn/ui | Schnell, konsistent, Dark Mode |
 | Daten & Login | Supabase (Postgres, Auth, Storage) | Login, Datenbank mit Zeilenrechten und Fotospeicher in einem |
 | Geplante Jobs | Supabase Cron oder Vercel Cron | Morgen-Briefing, Aufräumen abgelaufener Angebote |
-| KI | Gemini API (Google), kostenloses Kontingent, mit Bildeingabe; Anbieter austauschbar | Datum lesen, Produkte/Bons/Prospekte erkennen, Rezepte, Wochenplan |
+| KI | Gemini API (Google), kostenloses Kontingent, mit Bildeingabe; Anbieter austauschbar. **Entscheidung Phase 2:** vorerst Groq (kostenloser Tarif, Bilder mit `qwen/qwen3.8-27b`), weil AI Studio nicht erreichbar war; Wechsel zu Gemini über `AI_PROVIDER` | Datum lesen, Produkte/Bons/Prospekte erkennen, Rezepte, Wochenplan |
 | Produktdaten | Open Food Facts API | Kostenlos, deutsche Produkte gut abgedeckt |
 | Barcode | `@zxing/browser` (Fallback), `BarcodeDetector` wo vorhanden | Läuft auch auf iPhone |
 | Hosting | Vercel (App) + Supabase (Daten) | Beides kostenlos: Vercel Hobby für private Projekte, Supabase Free (500 MB Datenbank, 1 GB Speicher) |

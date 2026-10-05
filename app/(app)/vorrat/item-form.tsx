@@ -27,7 +27,8 @@ export function ItemForm({
 }: {
   categories: Category[];
   locations: Location[];
-  defaults?: ItemDefaults;
+  /** Vorbelegung: komplett beim Bearbeiten, teilweise z. B. mit gescanntem Datum */
+  defaults?: Partial<ItemDefaults>;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(savePantryItem, {});
   // Lagerort merken wir uns selbst, damit die Kategorie ihn vorschlagen kann
@@ -40,7 +41,7 @@ export function ItemForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      {defaults && <input type="hidden" name="id" value={defaults.id} />}
+      {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
       {defaults?.date_estimated && defaults.date && (
         <input type="hidden" name="estimated_date" value={defaults.date} />
       )}

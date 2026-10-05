@@ -6,7 +6,7 @@ Handy-App (PWA) für meinen Vorrat mit Ablaufdaten, Scannen, KI-Kochvorschlägen
 
 ## Technik
 
-Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Login, Fotos) · Gemini API (kostenloses Kontingent, nur vom Server aufgerufen) · Open Food Facts · Hosting auf Vercel (Hobby). Details und Datenmodell stehen in der SPEC unter „Technik“.
+Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Login, Fotos) · KI über `lib/ai` (aktuell Groq, kostenloser Tarif, nur vom Server aufgerufen; Gemini als Alternative laut SPEC) · Open Food Facts · Hosting auf Vercel (Hobby). Details und Datenmodell stehen in der SPEC unter „Technik“.
 
 ## Infrastruktur (Stand Phase 0)
 
@@ -24,6 +24,9 @@ Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Log
 - `lib/data/`: Laden aus Supabase (`loadBasics` legt beim ersten Besuch die Startwerte per `ensure_defaults()` an)
 - `supabase/migrations/`: Datenbank-Änderungen als SQL; übertragen mit `npm run db:push`, danach `npm run db:types`
 - `components/styles.ts`: gemeinsame Tailwind-Klassen (keine UI-Bibliothek)
+- `lib/ai/`: KI-Schnittstelle (`askJson` mit zod, Tageslimit per `consume_ai_quota`, Anbieter in `groq.ts`); `lib/scan/`: Aufgaben und Nachbearbeitung fürs Scannen
+- `lib/allergens/peanut.ts`: Erdnuss-Check (streng, im Zweifel warnen) – jede Änderung braucht Tests
+- `app/api/products/[ean]` (Barcode → Cache → Open Food Facts), `app/api/scan` (Foto → KI); Fotos werden nie gespeichert
 
 ## Befehle
 

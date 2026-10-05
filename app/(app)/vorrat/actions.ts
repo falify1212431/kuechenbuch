@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { mentionsPeanut } from "@/lib/allergens/peanut";
 import { addToShoppingList } from "@/lib/data/shopping";
 import { todayInBerlin } from "@/lib/dates";
 import { applyRemaining, UNITS } from "@/lib/pantry/quantity";
@@ -65,7 +66,13 @@ export async function savePantryItem(_previous: FormState, formData: FormData): 
     estimated = date !== null;
   }
 
-  const row = { ...values, date, date_estimated: estimated };
+  const row = {
+    ...values,
+    date,
+    date_estimated: estimated,
+    // Erdnuss im Namen? Dann immer rot warnen, auch bei Einträgen von Hand
+    ...(mentionsPeanut(values.name) ? { allergen_warning: "erdnuss" } : {}),
+  };
   const { error } = id
     ? await supabase.from("pantry_items").update(row).eq("id", id)
     : await supabase.from("pantry_items").insert(row);

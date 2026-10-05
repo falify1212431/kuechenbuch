@@ -17,6 +17,8 @@ export interface PantryEntry extends ExpiryInfo {
   openedAt: string | null;
   /** Das Datum, das wirklich gilt (verkürzt, wenn geöffnet) */
   effective: string | null;
+  /** Erdnuss-Hinweis aus dem Scan: erdnuss, spuren, ungeprueft oder null */
+  allergenWarning: "erdnuss" | "spuren" | "ungeprueft" | null;
 }
 
 interface PantryRow {
@@ -31,6 +33,7 @@ interface PantryRow {
   date_type: string;
   date_estimated: boolean;
   opened_at: string | null;
+  allergen_warning: string | null;
 }
 
 /** Rechnet aus einer Datenbank-Zeile den Eintrag für die Anzeige */
@@ -54,6 +57,7 @@ export function toPantryEntry(row: PantryRow, rules: ShelfLifeRule[], today: str
     estimated: row.date_estimated,
     openedAt: row.opened_at,
     effective,
+    allergenWarning: row.allergen_warning as PantryEntry["allergenWarning"],
     ...expiryInfo(effective, dateType, today),
   };
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PeanutBanner } from "@/components/peanut-banner";
 import { buttonPrimary, buttonSecondary, card, levelDot, levelText } from "@/components/styles";
 import { loadBasics } from "@/lib/data/basics";
 import { formatDateDe, todayInBerlin } from "@/lib/dates";
@@ -42,6 +43,8 @@ export default async function ItemPage({ params, searchParams }: PageProps<"/vor
           Steht jetzt auf der <Link href="/einkauf" className="underline">Einkaufsliste</Link>.
         </p>
       )}
+
+      {entry.allergenWarning && <PeanutBanner status={entry.allergenWarning} />}
 
       <div className={`${card} flex flex-col gap-1`}>
         <p className={`flex items-center gap-2 font-semibold ${levelText[entry.level]}`}>

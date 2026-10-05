@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          count: number
+          day: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          day: string
+          user_id?: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           aisle_order: number
@@ -169,6 +187,74 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          allergens: string[] | null
+          barcode: string
+          brand: string | null
+          created_at: string
+          default_category_id: string | null
+          household_id: string | null
+          id: string
+          image_url: string | null
+          ingredients_text: string | null
+          name: string
+          nutriments: Json | null
+          quantity: number | null
+          source: string
+          traces: string[] | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allergens?: string[] | null
+          barcode: string
+          brand?: string | null
+          created_at?: string
+          default_category_id?: string | null
+          household_id?: string | null
+          id?: string
+          image_url?: string | null
+          ingredients_text?: string | null
+          name: string
+          nutriments?: Json | null
+          quantity?: number | null
+          source: string
+          traces?: string[] | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          allergens?: string[] | null
+          barcode?: string
+          brand?: string | null
+          created_at?: string
+          default_category_id?: string | null
+          household_id?: string | null
+          id?: string
+          image_url?: string | null
+          ingredients_text?: string | null
+          name?: string
+          nutriments?: Json | null
+          quantity?: number | null
+          source?: string
+          traces?: string[] | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_default_category_id_fkey"
+            columns: ["default_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shelf_life_rules: {
         Row: {
           category_id: string | null
@@ -275,6 +361,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_ai_quota: { Args: { day_limit: number }; Returns: boolean }
       ensure_defaults: { Args: never; Returns: undefined }
     }
     Enums: {
