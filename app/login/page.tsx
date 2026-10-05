@@ -23,8 +23,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       </div>
       {params.fehler === "link" && (
         <p role="alert" className="rounded-lg bg-amber-50 p-3 text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          Der Link aus der Mail hat nicht funktioniert, wahrscheinlich ist er abgelaufen oder wurde schon benutzt.
-          Fordere einfach einen neuen Code an.
+          Der Link aus der Mail hat nicht funktioniert. Entweder ist er abgelaufen oder schon benutzt, oder er
+          wurde in einem anderen Browser geöffnet als dem, in dem du ihn angefordert hast. Fordere einfach eine
+          neue Mail an.
         </p>
       )}
       <LoginForm next={next} />
