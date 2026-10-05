@@ -19,7 +19,7 @@ npm run dev
 
 ## Online (Vercel)
 
-Vercel baut die App bei jedem Push auf GitHub automatisch neu. Die Variablen aus `.env.example` müssen dort unter Settings → Environment Variables eingetragen sein. Die Server-Region Frankfurt steht in `vercel.json`.
+Vercel baut die App bei jedem Push auf GitHub automatisch neu. Die Variablen aus `.env.example` müssen dort unter Settings → Environment Variables eingetragen sein. Die Server-Region Dublin (`dub1`) steht in `vercel.json`. Sie liegt bewusst neben der Supabase-Datenbank (Irland, `eu-west-1`).
 
 ## Einstellungen im Supabase-Dashboard
 

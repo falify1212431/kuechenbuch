@@ -15,6 +15,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) redirect(next);
+    console.error("Login-Link: Code ließ sich nicht eintauschen:", error.code, error.message);
+  } else {
+    // Supabase hat den Link schon selbst abgelehnt (z. B. abgelaufen oder schon benutzt)
+    console.error("Login-Link abgelehnt:", params.get("error_code"), params.get("error_description"));
   }
 
   redirect("/login?fehler=link");
