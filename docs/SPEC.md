@@ -265,10 +265,10 @@ Acht Phasen (0–7), jede endet mit einer App, die ich wirklich benutzen kann. E
 
 ### Phase 4 – Essensplan
 
-- [ ] Wochenansicht, Gerichte eintragen und verschieben
-- [ ] „Woche planen“ per KI, einzelne Tage neu würfeln
-- [ ] Einkaufsliste aus dem Plan (Bedarf minus Vorrat, Doppelte zusammengeführt)
-- [ ] Auftau-Erinnerung am Vorabend
+- [x] Wochenansicht, Gerichte eintragen und verschieben
+- [x] „Woche planen“ per KI, einzelne Tage neu würfeln
+- [x] Einkaufsliste aus dem Plan (Bedarf minus Vorrat, Doppelte zusammengeführt)
+- [x] Auftau-Erinnerung am Vorabend (vorerst nur als Hinweis in der App ab 17 Uhr, abgesprochen am 07.10.2026)
 
 ### Phase 5 – Prospekte
 
