@@ -29,6 +29,7 @@ function toPreferences(row: Tables<"preferences">): Preferences {
     appliances: row.appliances,
     staples: row.staples,
     meal_slots: parseSlots(row.meal_slots),
+    plz: row.plz,
   };
 }
 

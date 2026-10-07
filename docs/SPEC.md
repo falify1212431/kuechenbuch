@@ -123,7 +123,7 @@ Alles hier fließt in die KI-Vorschläge und den Essensplan ein:
 
 ### 7. Prospekte & Angebote
 
-- **Meine Märkte:** Aldi, Lidl und Wasgau, dazu meine PLZ, weil Angebote regional verschieden sind. Weitere Märkte lassen sich in den Einstellungen ergänzen.
+- **Meine Märkte:** Aldi Süd, Lidl und Wasgau, dazu meine PLZ bzw. mein Ort (Kaiserslautern), weil Angebote regional verschieden sind. Weitere Märkte lassen sich in den Einstellungen ergänzen.
 - **Prospekt einlesen (Version 1):** Ich lade den Prospekt als PDF hoch oder fotografiere Seiten. Die KI zieht daraus: Produkt, Marke, Preis, Grundpreis, Rabatt, gültig von/bis, Markt. Ich bekomme eine Liste zum Durchsehen.
 - **Automatischer Import (später, nur wenn erlaubt):** Supermarktketten bieten keine öffentliche Angebots-Schnittstelle; Prospekt-Apps wie [kaufDA](https://www.kaufda.de/Branchen/Supermarkt) oder [marktguru](https://www.marktguru.de/prospekte) bündeln sie in eigenen Apps. Ein automatischer Abruf kommt nur in Frage, wenn die Nutzungsbedingungen der Quelle das erlauben. Claude Code prüft das und fragt mich, bevor er so etwas baut.
 - **Nutzen der Angebote:** Treffer zu meiner Einkaufsliste und meinen Lieblingsprodukten werden hervorgehoben („Deine Haferflocken sind bei Lidl 30 % günstiger“). Die KI berücksichtigt Angebote beim Essensplan.
@@ -190,7 +190,7 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | `shopping_items` | name, quantity, unit, category_id, checked, source (`hand` / `nachkaufen` / `plan` / `rezept` / `angebot`), offer_id |
 | `recipes` | title, summary, servings, minutes, difficulty, ingredients (JSON), steps (JSON, mit Timer-Minuten), meal_prep (JSON), source (`ki` / `manuell`), rating (1 / -1), favorite, cooked_count, last_cooked_at, suggested_at + suggestion_rank (KI-Vorschläge, unbenutzte werden nach 7 Tagen gelöscht) |
 | `meal_plan` | date, slot (`mittag` / `abend`), recipe_id oder free_text oder leftovers_recipe_id (Reste, Meal-Prep) oder skip (frei/auswärts), cooked; pro Tag und Mahlzeit ein Eintrag. Welche Mahlzeiten geplant werden, steht in `preferences.meal_slots` (Start: nur Abend, geklärt am 07.10.2026) |
-| `stores` / `offers` | store, product, brand, price, unit_price, discount, valid_from, valid_to, flyer_upload_id |
+| `stores` / `offers` | stores: name, flyer_url (Link zur Prospekt-Seite), sort_order; offers: store_id, product, brand, price, unit_price, discount, valid_from, valid_to, flyer_upload_id; dazu `flyer_uploads` (Markt, Seitenzahl – Bilder werden nicht gespeichert) und `preferences.plz` |
 | `preferences` | diet, diet_notes, allergies[], dislikes[], cuisines[], goals[], servings, max_minutes_weekday, max_minutes_weekend, budget_week, appliances[], staples[] (aisle_order steht seit Phase 1 an den Kategorien; briefing_time kommt in Phase 6) |
 | `api_tokens` | token_hash, label, created_at, last_used_at – für den Daily-Bot |
 
@@ -202,7 +202,7 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | `POST /api/scan` | Bild + Modus (`datum` / `produkt` / `lose-ware` / `kassenbon`) → erkannte Einträge als JSON zum Bestätigen |
 | `POST /api/ai/suggest` | Kochvorschläge aus Vorrat, Vorlieben, Angeboten, Wunsch (umgesetzt in Phase 3 als Server-Aktion `suggestRecipes` in `app/(app)/kochen/actions.ts`) |
 | `POST /api/ai/plan-week` | Wochenplan + daraus resultierende Einkaufsliste (umgesetzt in Phase 4 als Server-Aktionen `planWeek`/`rerollDay` in `app/(app)/plan/actions.ts`; die KI liefert nur Gerichte + Zutaten, die Zubereitung wird pro Gericht per Knopf nachgeholt) |
-| `POST /api/offers/import` | Prospekt-PDF oder -Fotos → Angebote zum Durchsehen |
+| `POST /api/offers/import` | Prospekt-PDF oder -Fotos → Angebote zum Durchsehen (umgesetzt in Phase 5: eine Seite pro Aufruf; PDFs zerlegt das Handy selbst mit pdf.js in Seitenbilder) |
 | `GET /api/briefing?format=text\|json` | Morgen-Briefing, Auth per `Authorization: Bearer <token>` |
 
 Optional zusätzlich: Die App schickt das Briefing zur eingestellten Uhrzeit selbst per Webhook an meinen Bot (URL in den Einstellungen).

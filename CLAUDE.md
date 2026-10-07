@@ -28,6 +28,8 @@ Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Log
 - `lib/allergens/peanut.ts`: Erdnuss-Check für Produkte; `lib/allergens/blocklist.ts`: Sperrliste für Rezepte (Erdnuss, Kokos, eingelegter Fisch, Matjes, Sardellen + eigene Begriffe). Beide streng, im Zweifel warnen bzw. verwerfen – jede Änderung braucht Tests
 - `lib/cooking/`: Kochen mit KI (`suggest.ts` Prompt + Nachbearbeitung/Sortierung, `ingredients.ts` Umrechnen/Grundvorrat, `consume.ts` „Gekocht“, `preferences.ts` Startwerte); `lib/data/cooking.ts` lädt Vorlieben und Rezepte
 - `lib/plan/`: Wochenplan (`week.ts` Wochen/Plätze, `move.ts` Verschieben/Tauschen, `shopping.ts` Einkauf aus dem Plan, `thaw.ts` Auftau-Hinweis, `ai-plan.ts` KI-Wochenplan und Zubereitung); `lib/data/plan.ts` lädt Plan und Auftau-Hinweise
+- `lib/offers/`: Prospekte (`extract.ts` KI-Aufgabe + Preise lesen, `offers.ts` Gültigkeit, Abgleich mit Einkaufsliste, Liste für die KI); `lib/data/offers.ts` lädt Märkte/Angebote und löscht abgelaufene; `lib/image/pdf.ts` zerlegt PDFs im Browser (Worker wird per `postinstall` nach `public/` kopiert)
+- Angebote liegen unter Einkauf → Angebote (`app/(app)/einkauf/angebote`), Märkte & PLZ unter Mehr
 - `app/api/products/[ean]` (Barcode → Cache → Open Food Facts), `app/api/scan` (Foto → KI); Fotos werden nie gespeichert
 
 ## Befehle

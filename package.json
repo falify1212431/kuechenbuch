@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:push": "npx supabase db push --linked",
-    "db:types": "npx supabase gen types typescript --linked --schema public > lib/supabase/database.types.ts"
+    "db:types": "npx supabase gen types typescript --linked --schema public > lib/supabase/database.types.ts",
+    "postinstall": "node scripts/copy-pdf-worker.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -18,6 +19,7 @@
     "@zxing/browser": "^0.2.1",
     "@zxing/library": "^0.23.0",
     "next": "16.3.8",
+    "pdfjs-dist": "^6.4.299",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "^4.6.5"

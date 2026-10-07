@@ -130,6 +130,8 @@ export interface SuggestContext {
   dislikedTitles: string[];
   /** Gerade schon vorgeschlagen – diesmal etwas anderes */
   recentTitles: string[];
+  /** Aktuelle Angebote als kurze Zeilen (offersForAi) */
+  offers: string[];
 }
 
 export const list = (items: string[]) => (items.length > 0 ? items.join(", ") : "keine Angabe");
@@ -156,6 +158,11 @@ export function pantryLines(pantry: AiPantryItem[]): string[] {
   return pantry.length > 0
     ? pantry.map((item) => `#${item.ref} ${item.name} – ${formatQuantity(item.quantity, item.unit)} – ${describeDays(item)}`)
     : ["(Der Vorrat ist leer.)"];
+}
+
+/** Angebote als Abschnitt für den Prompt (leer, wenn keine da sind) */
+export function offerLines(offers: string[]): string[] {
+  return offers.length > 0 ? ["", "AKTUELLE ANGEBOTE (gern nutzen, wenn es passt – fehlende Zutaten möglichst daraus):", ...offers.map((o) => `- ${o}`)] : [];
 }
 
 /** Vorlieben als Zeilen für die KI (ohne Portionen und Zeit, die hängen von der Aufgabe ab) */
@@ -197,6 +204,7 @@ export function buildSuggestTask(ctx: SuggestContext): { system: string; prompt:
     ...pantryLines(ctx.pantry),
     "",
     `GRUNDVORRAT (immer da, steht nicht im Vorrat): ${list(prefs.staples)}`,
+    ...offerLines(ctx.offers),
     "",
     "VORLIEBEN:",
     ...preferenceLines(prefs, ctx.likedTitles),

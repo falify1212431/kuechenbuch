@@ -23,6 +23,7 @@ function context(overrides: Partial<PlanContext> = {}): PlanContext {
     likedTitles: [],
     dislikedTitles: [],
     avoidTitles: [],
+    offers: [],
     ...overrides,
   };
 }

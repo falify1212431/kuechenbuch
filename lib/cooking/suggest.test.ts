@@ -60,6 +60,7 @@ function context(overrides: Partial<SuggestContext> = {}): SuggestContext {
     likedTitles: [],
     dislikedTitles: [],
     recentTitles: [],
+    offers: [],
     ...overrides,
   };
 }
@@ -292,5 +293,12 @@ describe("Portionen im Prompt", () => {
   it("plant bei Meal-Prep mehr Portionen", () => {
     expect(buildSuggestTask(context()).prompt).toContain("- Portionen: 2");
     expect(buildSuggestTask(context({ filters: { ...noFilters, mealPrep: true } })).prompt).toContain("mindestens 4 Portionen");
+  });
+});
+
+describe("Angebote im Prompt", () => {
+  it("nennt Angebote nur, wenn es welche gibt", () => {
+    expect(buildSuggestTask(context()).prompt).not.toContain("ANGEBOTE");
+    expect(buildSuggestTask(context({ offers: ["Lidl: Hackfleisch 3,99 € – bis 11.10.2026"] })).prompt).toContain("- Lidl: Hackfleisch 3,99 €");
   });
 });

@@ -11,6 +11,7 @@ import {
   cookingSystemPrompt,
   linkIngredients,
   list,
+  offerLines,
   pantryLines,
   preferenceLines,
   type AiPantryItem,
@@ -55,6 +56,8 @@ export interface PlanContext {
   dislikedTitles: string[];
   /** Diesmal nicht (z. B. beim Neu-Würfeln die bisherigen Gerichte) */
   avoidTitles: string[];
+  /** Aktuelle Angebote als kurze Zeilen (offersForAi) */
+  offers: string[];
 }
 
 /** Höchste Kochzeit für einen Tag: Wochenende länger */
@@ -77,6 +80,7 @@ export function buildPlanTask(ctx: PlanContext): { system: string; prompt: strin
     ...pantryLines(ctx.pantry),
     "",
     `GRUNDVORRAT (immer da): ${list(prefs.staples)}`,
+    ...offerLines(ctx.offers),
     "",
     "VORLIEBEN:",
     ...preferenceLines(prefs, ctx.likedTitles),

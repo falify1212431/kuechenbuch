@@ -29,6 +29,8 @@ export interface Preferences {
   staples: string[];
   /** Welche Mahlzeiten der Wochenplan füllt */
   meal_slots: Slot[];
+  /** PLZ oder Ort für regionale Angebote */
+  plz: string | null;
 }
 
 /** Startwerte aus der SPEC, abgesprochen am 07.10.2026 */
@@ -48,6 +50,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   staples: ["Salz", "Pfeffer", "Öl", "Zucker", "Mehl", "Essig", "Gemüsebrühe", "Paprikapulver", "getrocknete Kräuter"],
   // Absprache 07.10.2026: jeden Tag nur das Abendessen als Hauptgericht planen
   meal_slots: ["abend"],
+  plz: "Kaiserslautern",
 };
 
 /**

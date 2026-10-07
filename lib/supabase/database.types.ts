@@ -76,6 +76,41 @@ export type Database = {
           },
         ]
       }
+      flyer_uploads: {
+        Row: {
+          created_at: string
+          household_id: string | null
+          id: string
+          pages: number
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          household_id?: string | null
+          id?: string
+          pages: number
+          store_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string | null
+          id?: string
+          pages?: number
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_uploads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           created_at: string
@@ -159,6 +194,69 @@ export type Database = {
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          brand: string | null
+          created_at: string
+          discount: string | null
+          flyer_upload_id: string | null
+          household_id: string | null
+          id: string
+          price: number
+          product: string
+          store_id: string
+          unit_price: string | null
+          user_id: string
+          valid_from: string | null
+          valid_to: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          discount?: string | null
+          flyer_upload_id?: string | null
+          household_id?: string | null
+          id?: string
+          price: number
+          product: string
+          store_id: string
+          unit_price?: string | null
+          user_id?: string
+          valid_from?: string | null
+          valid_to: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          discount?: string | null
+          flyer_upload_id?: string | null
+          household_id?: string | null
+          id?: string
+          price?: number
+          product?: string
+          store_id?: string
+          unit_price?: string | null
+          user_id?: string
+          valid_from?: string | null
+          valid_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_flyer_upload_id_fkey"
+            columns: ["flyer_upload_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -258,6 +356,7 @@ export type Database = {
           max_minutes_weekday: number
           max_minutes_weekend: number
           meal_slots: string[]
+          plz: string | null
           servings: number
           staples: string[]
           updated_at: string
@@ -276,6 +375,7 @@ export type Database = {
           max_minutes_weekday?: number
           max_minutes_weekend?: number
           meal_slots?: string[]
+          plz?: string | null
           servings?: number
           staples?: string[]
           updated_at?: string
@@ -294,6 +394,7 @@ export type Database = {
           max_minutes_weekday?: number
           max_minutes_weekend?: number
           meal_slots?: string[]
+          plz?: string | null
           servings?: number
           staples?: string[]
           updated_at?: string
@@ -534,7 +635,44 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "shopping_items_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      stores: {
+        Row: {
+          created_at: string
+          flyer_url: string | null
+          household_id: string | null
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flyer_url?: string | null
+          household_id?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          flyer_url?: string | null
+          household_id?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

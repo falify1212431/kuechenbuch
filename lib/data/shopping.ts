@@ -11,7 +11,7 @@ export type ShoppingSource = "hand" | "nachkaufen" | "plan" | "rezept" | "angebo
  */
 export async function addToShoppingList(
   supabase: Supabase,
-  entry: { name: string; quantity: number; unit: string; category_id: string | null; source: ShoppingSource },
+  entry: { name: string; quantity: number; unit: string; category_id: string | null; source: ShoppingSource; offer_id?: string | null },
 ): Promise<{ error?: string; merged: boolean }> {
   const { data: lines, error } = await supabase
     .from("shopping_items")
@@ -26,7 +26,7 @@ export async function addToShoppingList(
   if (target) {
     const { error: updateError } = await supabase
       .from("shopping_items")
-      .update({ quantity: Number(target.quantity) + entry.quantity })
+      .update({ quantity: Number(target.quantity) + entry.quantity, ...(entry.offer_id ? { offer_id: entry.offer_id } : {}) })
       .eq("id", target.id);
     return { error: updateError?.message, merged: true };
   }
