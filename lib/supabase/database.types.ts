@@ -681,6 +681,7 @@ export type Database = {
     Functions: {
       consume_ai_quota: { Args: { day_limit: number }; Returns: boolean }
       ensure_defaults: { Args: never; Returns: undefined }
+      keepalive: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

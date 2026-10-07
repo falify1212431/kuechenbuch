@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseEnv } from "./env";
 
 // Diese Bereiche darf man auch ohne Login öffnen
-const PUBLIC_PATHS = ["/login", "/auth"];
+// /api/keepalive prüft selbst einen geheimen Schlüssel (täglicher Weckruf von Vercel Cron)
+const PUBLIC_PATHS = ["/login", "/auth", "/api/keepalive"];
 
 /**
  * Läuft vor jeder Anfrage (siehe proxy.ts im Hauptordner):
