@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { buttonPrimary, card, errorBox, input, label } from "@/components/styles";
 import { APPLIANCE_OPTIONS, CUISINE_OPTIONS, DIETS, FIXED_ALLERGY, GOAL_OPTIONS, type Preferences } from "@/lib/cooking/preferences";
+import { SLOT_LABELS, SLOTS } from "@/lib/plan/week";
 import { savePreferences, type PreferencesState } from "./actions";
 
 const chip =
@@ -112,6 +113,17 @@ export function PreferencesForm({ prefs, fixedExclusions }: { prefs: Preferences
           <NumberField name="max_minutes_weekend" title="Kochzeit Sa–So" value={prefs.max_minutes_weekend} unit="Min." min={5} max={300} />
         </div>
         <p className={hint}>Bei Meal-Prep darf es doppelt so lange dauern, bei „schnell“ höchstens 20 Minuten.</p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className={label}>Wochenplan: welche Mahlzeiten planen?</legend>
+          <div className="flex flex-wrap gap-2">
+            {SLOTS.map((slot) => (
+              <label key={slot} className={chip}>
+                <input type="checkbox" name="meal_slots" value={slot} defaultChecked={prefs.meal_slots.includes(slot)} className="sr-only" />
+                {SLOT_LABELS[slot]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <Choices name="appliances" title="Küchengeräte" options={APPLIANCE_OPTIONS} selected={prefs.appliances} />
         <ListField
           name="staples"

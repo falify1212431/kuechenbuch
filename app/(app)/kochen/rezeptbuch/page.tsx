@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { check, loadBasics } from "@/lib/data/basics";
 import { toRecipe } from "@/lib/data/cooking";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
 import { createClient } from "@/lib/supabase/server";
+import { CookTabs } from "../cook-tabs";
 import { RecipeCard } from "../recipe-card";
 
 export const metadata: Metadata = { title: "Rezeptbuch" };
@@ -30,10 +30,8 @@ export default async function RecipeBookPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <Link href="/kochen" className="text-stone-600 dark:text-stone-400">
-        ← Kochen
-      </Link>
-      <h1 className="text-3xl font-bold">Rezeptbuch</h1>
+      <h1 className="text-3xl font-bold">Kochen</h1>
+      <CookTabs current="/kochen/rezeptbuch" />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">★ Favoriten</h2>

@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buttonDanger, card } from "@/components/styles";
+import { buttonDanger, buttonSecondary, card, input } from "@/components/styles";
 import { ingredientStatus } from "@/lib/cooking/ingredients";
 import { check } from "@/lib/data/basics";
 import { toRecipe } from "@/lib/data/cooking";
 import { createClient } from "@/lib/supabase/server";
-import { addMissingToShopping, deleteRecipe, setRating, toggleFavorite } from "../actions";
+import { loadPreferences } from "@/lib/data/cooking";
+import { loadPlan } from "@/lib/data/plan";
+import { addDays, todayInBerlin } from "@/lib/dates";
+import { formatDayShort, SLOT_LABELS } from "@/lib/plan/week";
+import { addMissingToShopping, addRecipeToPlan, deleteRecipe, generateSteps, setRating, toggleFavorite } from "../actions";
 import { RecipeMeta } from "../recipe-card";
 import { IngredientsPanel } from "./ingredients-panel";
+import { StepsButton } from "./steps-button";
 
 export const metadata: Metadata = { title: "Rezept" };
 
@@ -22,7 +27,23 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/k
   const { data: row } = await supabase.from("recipes").select("*").eq("id", id).maybeSingle();
   if (!row) notFound();
   const recipe = toRecipe(row);
-  const pantry = check(await supabase.from("pantry_items").select("id, name").eq("status", "da"), "Vorrat laden");
+  const today = todayInBerlin();
+  const [pantryRows, prefs, upcoming] = await Promise.all([
+    supabase.from("pantry_items").select("id, name").eq("status", "da"),
+    loadPreferences(supabase),
+    loadPlan(supabase, today, addDays(today, 13)),
+  ]);
+  const pantry = check(pantryRows, "Vorrat laden");
+
+  // Für „In den Plan“: die nächsten 14 Tage mit den eingestellten Mahlzeiten
+  const planTargets = Array.from({ length: 14 }, (_, i) => addDays(today, i)).flatMap((date) =>
+    prefs.meal_slots.map((slot) => {
+      const taken = upcoming.find((e) => e.date === date && e.slot === slot);
+      const what = taken?.recipe?.title ?? (taken?.leftovers ? `Reste ${taken.leftovers.title}` : (taken?.freeText ?? (taken?.skip ? "frei" : null)));
+      return { value: `${date}|${slot}`, label: `${formatDayShort(date)} ${SLOT_LABELS[slot]}${what ? ` (ersetzt: ${what})` : ""}` };
+    }),
+  );
+  const plannedOn = upcoming.filter((e) => e.recipe?.id === recipe.id).map((e) => formatDayShort(e.date));
 
   const toggle = "flex-1 rounded-xl border px-3 py-2 text-lg";
   const on = "border-emerald-700 bg-emerald-50 dark:bg-emerald-950";
@@ -86,7 +107,24 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/k
           status: ingredientStatus(ingredient, pantry),
         }))}
         addMissing={addMissingToShopping.bind(null, recipe.id)}
+        hasSteps={recipe.steps.length > 0}
       />
+
+      <form action={addRecipeToPlan.bind(null, recipe.id)} className="flex gap-2">
+        <select name="target" required defaultValue="" aria-label="In den Wochenplan" className={`${input} min-w-0 flex-1`}>
+          <option value="" disabled>
+            {plannedOn.length > 0 ? `📅 Geplant: ${plannedOn.join(", ")}` : "📅 In den Wochenplan …"}
+          </option>
+          {planTargets.map((target) => (
+            <option key={target.value} value={target.value}>
+              {target.label}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className={buttonSecondary}>
+          Eintragen
+        </button>
+      </form>
 
       <p className="text-sm text-stone-500">
         Geprüft gegen Erdnuss, Kokos und eingelegten Fisch. Bei gekauften Zutaten trotzdem immer die Zutatenliste auf der Packung lesen.
@@ -94,6 +132,7 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/k
 
       <section className={`${card} flex flex-col gap-3`}>
         <h2 className="text-lg font-semibold">Zubereitung</h2>
+        {recipe.steps.length === 0 && <StepsButton action={generateSteps.bind(null, recipe.id)} />}
         <ol className="flex flex-col gap-3">
           {recipe.steps.map((step, index) => (
             <li key={index} className="flex gap-3">

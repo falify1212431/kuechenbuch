@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { parseList, preferencesFormSchema, withFixedAllergy } from "@/lib/cooking/preferences";
+import { parseList, parseSlots, preferencesFormSchema, withFixedAllergy } from "@/lib/cooking/preferences";
 import { createClient } from "@/lib/supabase/server";
 
 export type PreferencesState = { error?: string; saved?: number };
@@ -28,6 +28,7 @@ export async function savePreferences(previous: PreferencesState, formData: Form
       goals: parseList(checked(formData, "goals"), text(formData, "goals_more")),
       appliances: parseList(checked(formData, "appliances"), text(formData, "appliances_more")),
       staples: parseList([], text(formData, "staples")),
+      meal_slots: parseSlots(checked(formData, "meal_slots")),
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", auth.claims.sub);
@@ -35,5 +36,6 @@ export async function savePreferences(previous: PreferencesState, formData: Form
 
   revalidatePath("/einstellungen/vorlieben");
   revalidatePath("/kochen");
+  revalidatePath("/plan");
   return { saved: (previous.saved ?? 0) + 1 };
 }

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TABS = [
+const TABS: { href: string; label: string; icon: string; big?: boolean; also?: string[] }[] = [
   { href: "/vorrat", label: "Vorrat", icon: "🥫" },
-  { href: "/kochen", label: "Kochen", icon: "🍳" },
+  // Zum Kochen gehören auch Wochenplan und Rezeptbuch
+  { href: "/kochen", label: "Kochen", icon: "🍳", also: ["/plan"] },
   { href: "/scan", label: "Scannen", icon: "📷", big: true },
   { href: "/einkauf", label: "Einkauf", icon: "🛒" },
   { href: "/einstellungen", label: "Mehr", icon: "⚙️" },
@@ -18,7 +19,7 @@ export function BottomNav() {
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-stone-700">
       <ul className="mx-auto flex max-w-md items-end">
         {TABS.map((tab) => {
-          const active = pathname.startsWith(tab.href);
+          const active = [tab.href, ...(tab.also ?? [])].some((prefix) => pathname.startsWith(prefix));
           return (
             <li key={tab.href} className="flex-1">
               <Link

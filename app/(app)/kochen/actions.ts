@@ -12,6 +12,8 @@ import { addToShoppingList, guessCategoryId } from "@/lib/data/shopping";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
 import { applyRemaining } from "@/lib/pantry/quantity";
+import { buildStepsTask, finalizeSteps, stepsSchema } from "@/lib/plan/ai-plan";
+import { SLOTS, weekStart } from "@/lib/plan/week";
 import { createClient } from "@/lib/supabase/server";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -204,7 +206,63 @@ export async function markCooked(id: string, formData: FormData) {
     .eq("id", id);
   if (error) throw new Error(`Speichern hat nicht geklappt: ${error.message}`);
 
+  // Im Wochenplan abhaken: der nächstliegende, noch offene Termin mit diesem Rezept bis heute
+  const { data: planned } = await supabase
+    .from("meal_plan")
+    .select("id")
+    .eq("recipe_id", id)
+    .eq("cooked", false)
+    .lte("date", todayInBerlin())
+    .order("date", { ascending: false })
+    .limit(1);
+  if (planned?.[0]) await supabase.from("meal_plan").update({ cooked: true }).eq("id", planned[0].id);
+
   revalidatePath("/vorrat");
   revalidatePath("/kochen");
+  revalidatePath("/plan");
   redirect(`/kochen/${id}?hinweis=gekocht`);
+}
+
+export type StepsState = { error?: string };
+
+/**
+ * Zubereitung nachträglich erstellen (für Gerichte aus dem Wochenplan, die nur Zutaten haben).
+ * Auch hier prüft die Sperrliste jeden Schritt.
+ */
+export async function generateSteps(id: string): Promise<StepsState> {
+  const supabase = await createClient();
+  const recipe = await loadRecipe(supabase, id);
+  if (recipe.steps.length > 0) return {};
+
+  const prefs = await loadPreferences(supabase);
+  // Gibt es an einem anderen Abend Reste davon? Dann Meal-Prep-Hinweise mit erstellen
+  const { count } = await supabase.from("meal_plan").select("id", { count: "exact", head: true }).eq("leftovers_recipe_id", id);
+  const answer = await askAi(supabase, stepsSchema, { model: "text", ...buildStepsTask(recipe, prefs, (count ?? 0) > 0), temperature: 0.3 });
+  if (!answer.ok) return { error: answer.error };
+
+  const result = finalizeSteps(answer.data, prefs);
+  if (!result) return { error: "Die Zubereitung enthielt etwas von der Sperrliste und wurde verworfen. Bitte nochmal versuchen." };
+
+  const { error } = await supabase.from("recipes").update({ steps: result.steps, meal_prep: result.mealPrep }).eq("id", id);
+  if (error) return { error: `Speichern hat nicht geklappt: ${error.message}` };
+  revalidatePath(`/kochen/${id}`);
+  return {};
+}
+
+/** Rezept in den Wochenplan setzen: Ziel „JJJJ-MM-TT|abend“ */
+export async function addRecipeToPlan(id: string, formData: FormData) {
+  const [date, slot] = String(formData.get("target") ?? "").split("|");
+  const target = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), slot: z.enum(SLOTS) }).safeParse({ date, slot });
+  if (!target.success || !isUuid(id)) throw new Error("Ungültiger Termin.");
+
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) redirect("/login");
+  const { error } = await supabase.from("meal_plan").upsert(
+    { user_id: auth.claims.sub, ...target.data, recipe_id: id, free_text: null, leftovers_recipe_id: null, skip: false, cooked: false },
+    { onConflict: "user_id,date,slot" },
+  );
+  if (error) throw new Error(`Speichern hat nicht geklappt: ${error.message}`);
+  revalidatePath("/plan");
+  redirect(`/plan?woche=${weekStart(target.data.date)}`);
 }

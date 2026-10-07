@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buttonSecondary } from "@/components/styles";
 import { pantryForAi } from "@/lib/cooking/suggest";
 import { check, loadBasics } from "@/lib/data/basics";
 import { loadPreferences, toRecipe } from "@/lib/data/cooking";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
 import { createClient } from "@/lib/supabase/server";
+import { CookTabs } from "./cook-tabs";
 import { RecipeCard } from "./recipe-card";
 import { SuggestForm, type MustUseOption } from "./suggest-form";
 
@@ -42,12 +42,8 @@ export default async function CookPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Kochen</h1>
-        <Link href="/kochen/rezeptbuch" className={buttonSecondary}>
-          ★ Rezeptbuch
-        </Link>
-      </header>
+      <h1 className="text-3xl font-bold">Kochen</h1>
+      <CookTabs current="/kochen" />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Was kann ich heute kochen?</h2>

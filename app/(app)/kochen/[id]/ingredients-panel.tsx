@@ -27,11 +27,14 @@ export function IngredientsPanel({
   baseServings,
   ingredients,
   addMissing,
+  hasSteps,
 }: {
   recipeId: string;
   baseServings: number;
   ingredients: PanelIngredient[];
   addMissing: (formData: FormData) => Promise<void>;
+  /** Ohne Schritte gibt es noch keinen Koch-Modus */
+  hasSteps: boolean;
 }) {
   const [servings, setServings] = useState(baseServings);
   const factor = servings / baseServings;
@@ -83,9 +86,15 @@ export function IngredientsPanel({
       </section>
 
       <div className="flex gap-2">
-        <Link href={`/kochen/${recipeId}/kochmodus?portionen=${servings}`} className={`${buttonPrimary} flex-1`}>
-          👩‍🍳 Koch-Modus
-        </Link>
+        {hasSteps ? (
+          <Link href={`/kochen/${recipeId}/kochmodus?portionen=${servings}`} className={`${buttonPrimary} flex-1`}>
+            👩‍🍳 Koch-Modus
+          </Link>
+        ) : (
+          <span className={`${buttonPrimary} flex-1 opacity-50`} aria-disabled>
+            👩‍🍳 Koch-Modus
+          </span>
+        )}
         <Link href={`/kochen/${recipeId}/gekocht?portionen=${servings}`} className={`${buttonSecondary} flex-1`}>
           ✅ Gekocht
         </Link>

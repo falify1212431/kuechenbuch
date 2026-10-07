@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonPrimary } from "@/components/styles";
+import { ThawBanner } from "@/components/thaw-banner";
+import { loadThawReminders } from "@/lib/data/plan";
 import { check, loadBasics } from "@/lib/data/basics";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
@@ -34,6 +36,7 @@ export default async function PantryPage({ searchParams }: PageProps<"/vorrat">)
 
   const today = todayInBerlin();
   const entries = rows.map((row) => toPantryEntry(row, rules, today));
+  const reminders = await loadThawReminders(supabase, today);
   const due = countDue(entries);
 
   return (
@@ -46,6 +49,8 @@ export default async function PantryPage({ searchParams }: PageProps<"/vorrat">)
       </header>
 
       {notice && <p className="rounded-lg bg-emerald-50 p-3 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">{notice}</p>}
+
+      <ThawBanner reminders={reminders} />
 
       {/* Die Leiste „heute fällig / bald fällig“ */}
       {entries.length > 0 && (
