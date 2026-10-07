@@ -8,6 +8,8 @@ import { ingredientStatus, toShoppingLine } from "@/lib/cooking/ingredients";
 import { buildSuggestTask, finalizeSuggestions, pantryForAi, suggestionSchema, type SuggestContext } from "@/lib/cooking/suggest";
 import { check, loadBasics } from "@/lib/data/basics";
 import { cleanupOldSuggestions, loadPreferences, toRecipe } from "@/lib/data/cooking";
+import { loadOffers } from "@/lib/data/offers";
+import { offersForAi } from "@/lib/offers/offers";
 import { addToShoppingList, guessCategoryId } from "@/lib/data/shopping";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
@@ -50,12 +52,13 @@ export async function suggestRecipes(previous: SuggestState, formData: FormData)
 
   const supabase = await createClient();
   const today = todayInBerlin();
-  const [{ rules }, prefs, pantryRows, rated, recent] = await Promise.all([
+  const [{ rules }, prefs, pantryRows, rated, recent, offers] = await Promise.all([
     loadBasics(supabase),
     loadPreferences(supabase),
     supabase.from("pantry_items").select("*").eq("status", "da"),
     supabase.from("recipes").select("title, rating, favorite").or("rating.not.is.null,favorite.eq.true").limit(60),
     supabase.from("recipes").select("title").not("suggested_at", "is", null).order("suggested_at", { ascending: false }).limit(6),
+    loadOffers(supabase),
   ]);
 
   const entries = check(pantryRows, "Vorrat laden").map((row) => toPantryEntry(row, rules, today));
@@ -73,6 +76,7 @@ export async function suggestRecipes(previous: SuggestState, formData: FormData)
     likedTitles: ratedRows.filter((r) => r.rating === 1 || r.favorite).map((r) => r.title).slice(0, 10),
     dislikedTitles: ratedRows.filter((r) => r.rating === -1).map((r) => r.title).slice(0, 30),
     recentTitles: check(recent, "Letzte Vorschläge laden").map((r) => r.title),
+    offers: offersForAi(offers, today, [...prefs.allergies, ...prefs.dislikes]),
   };
 
   const task = buildSuggestTask(ctx);

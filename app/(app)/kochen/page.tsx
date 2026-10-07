@@ -3,6 +3,7 @@ import Link from "next/link";
 import { pantryForAi } from "@/lib/cooking/suggest";
 import { check, loadBasics } from "@/lib/data/basics";
 import { loadPreferences, toRecipe } from "@/lib/data/cooking";
+import { loadOffers } from "@/lib/data/offers";
 import { todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
 import { createClient } from "@/lib/supabase/server";
@@ -15,11 +16,12 @@ export const metadata: Metadata = { title: "Kochen" };
 export default async function CookPage() {
   const supabase = await createClient();
   const today = todayInBerlin();
-  const [{ rules }, prefs, pantryRows, latest] = await Promise.all([
+  const [{ rules }, prefs, pantryRows, latest, offers] = await Promise.all([
     loadBasics(supabase),
     loadPreferences(supabase),
     supabase.from("pantry_items").select("*").eq("status", "da"),
     supabase.from("recipes").select("suggested_at").not("suggested_at", "is", null).order("suggested_at", { ascending: false }).limit(1),
+    loadOffers(supabase),
   ]);
   const pantry = check(pantryRows, "Vorrat laden").map((row) => toPantryEntry(row, rules, today));
 
@@ -60,7 +62,7 @@ export default async function CookPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">Vorschläge</h2>
           {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} pantry={pantry} />
+            <RecipeCard key={recipe.id} recipe={recipe} pantry={pantry} offers={offers} today={today} />
           ))}
         </section>
       )}

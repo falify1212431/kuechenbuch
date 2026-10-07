@@ -7,7 +7,9 @@ import { askAi } from "@/lib/ai/server";
 import { pantryForAi } from "@/lib/cooking/suggest";
 import { check, loadBasics } from "@/lib/data/basics";
 import { loadPreferences } from "@/lib/data/cooking";
+import { loadOffers } from "@/lib/data/offers";
 import { loadPlan } from "@/lib/data/plan";
+import { offersForAi } from "@/lib/offers/offers";
 import { addToShoppingList, guessCategoryId } from "@/lib/data/shopping";
 import { addDays, todayInBerlin } from "@/lib/dates";
 import { toPantryEntry } from "@/lib/pantry/entry";
@@ -39,13 +41,14 @@ async function fillPlaces(supabase: Supabase, monday: string, places: PlanPlace[
   if (places.length === 0) return { notice: "Alle Abende sind schon geplant." };
 
   const today = todayInBerlin();
-  const [{ rules }, prefs, pantryRows, rated, week] = await Promise.all([
+  const [{ rules }, prefs, pantryRows, rated, week, offers] = await Promise.all([
     loadBasics(supabase),
     loadPreferences(supabase),
     supabase.from("pantry_items").select("*").eq("status", "da"),
     supabase.from("recipes").select("title, rating, favorite").or("rating.not.is.null,favorite.eq.true").limit(60),
     // Auch die Tage vor der Woche, damit Reste vom Sonntag am Montag möglich sind
     loadPlan(supabase, addDays(monday, -3), addDays(monday, 6)),
+    loadOffers(supabase),
   ]);
 
   const entries = check(pantryRows, "Vorrat laden").map((row) => toPantryEntry(row, rules, today));
@@ -59,6 +62,7 @@ async function fillPlaces(supabase: Supabase, monday: string, places: PlanPlace[
     likedTitles: ratedRows.filter((r) => r.rating === 1 || r.favorite).map((r) => r.title).slice(0, 10),
     dislikedTitles: ratedRows.filter((r) => r.rating === -1).map((r) => r.title).slice(0, 30),
     avoidTitles,
+    offers: offersForAi(offers, today, [...prefs.allergies, ...prefs.dislikes]),
   };
 
   const answer = await askAi(supabase, planSchema, { model: "text", ...buildPlanTask(ctx), temperature: 0.7 });

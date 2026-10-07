@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonPrimary } from "@/components/styles";
 import { check, loadBasics } from "@/lib/data/basics";
+import { loadOffers } from "@/lib/data/offers";
+import { todayInBerlin } from "@/lib/dates";
+import { bestOffer, offerShortLabel } from "@/lib/offers/offers";
 import { formatQuantity, type Unit } from "@/lib/pantry/quantity";
 import { groupForStore } from "@/lib/shopping/list";
 import { createClient } from "@/lib/supabase/server";
@@ -12,8 +15,13 @@ export const metadata: Metadata = { title: "Einkauf" };
 
 export default async function ShoppingPage() {
   const supabase = await createClient();
-  const { categories } = await loadBasics(supabase);
-  const rows = check(await supabase.from("shopping_items").select("*"), "Einkaufsliste laden");
+  const [{ categories }, rowsResult, offers] = await Promise.all([
+    loadBasics(supabase),
+    supabase.from("shopping_items").select("*"),
+    loadOffers(supabase),
+  ]);
+  const rows = check(rowsResult, "Einkaufsliste laden");
+  const today = todayInBerlin();
 
   const lines = rows.map((row) => ({ ...row, quantity: Number(row.quantity) }));
   const groups = groupForStore(lines, categories);
@@ -22,7 +30,12 @@ export default async function ShoppingPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold">Einkauf</h1>
+      <header className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Einkauf</h1>
+        <Link href="/einkauf/angebote" className="rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium dark:border-stone-600">
+          🏷️ Angebote{offers.length > 0 ? ` (${offers.length})` : ""}
+        </Link>
+      </header>
 
       <AddShoppingForm categories={categories} />
 
@@ -36,7 +49,9 @@ export default async function ShoppingPage() {
               {category ? `${category.icon ?? ""} ${category.name}` : "Sonstiges"}
             </h2>
             <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white dark:divide-stone-700 dark:border-stone-700 dark:bg-stone-900">
-              {group.items.map((line) => (
+              {group.items.map((line) => {
+                const offer = line.checked ? null : bestOffer(line.name, offers, today);
+                return (
                 <li key={line.id} className="flex items-center">
                   {/* Die ganze Zeile ist ein Knopf zum Abhaken */}
                   <form action={toggleChecked.bind(null, line.id, !line.checked)} className="min-w-0 flex-1">
@@ -49,8 +64,9 @@ export default async function ShoppingPage() {
                       >
                         {line.checked && "✓"}
                       </span>
-                      <span className={`min-w-0 flex-1 truncate ${line.checked ? "text-stone-400 line-through" : ""}`}>
-                        {line.name}
+                      <span className="min-w-0 flex-1">
+                        <span className={`block truncate ${line.checked ? "text-stone-400 line-through" : ""}`}>{line.name}</span>
+                        {offer && <span className="block truncate text-xs text-emerald-700 dark:text-emerald-400">🏷️ {offerShortLabel(offer, today)}</span>}
                       </span>
                       <span className="shrink-0 text-sm text-stone-500">{formatQuantity(line.quantity, line.unit as Unit)}</span>
                       <span className="sr-only">{line.checked ? "abgehakt, antippen zum Zurücknehmen" : "antippen zum Abhaken"}</span>
@@ -62,7 +78,8 @@ export default async function ShoppingPage() {
                     </button>
                   </form>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </section>
         );

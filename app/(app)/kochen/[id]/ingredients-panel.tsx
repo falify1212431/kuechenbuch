@@ -10,6 +10,8 @@ export interface PanelIngredient {
   amount: number | null;
   unit: RecipeUnit | null;
   status: IngredientStatus;
+  /** Passendes Angebot, z. B. „Lidl: 0,99 € bis Sa“ */
+  offer: string | null;
 }
 
 const STATUS_STYLE: Record<IngredientStatus, string> = {
@@ -69,6 +71,7 @@ export function IngredientsPanel({
               <span>
                 {ingredient.name}
                 {ingredient.status === "fehlt" && <span className="text-sm text-amber-700 dark:text-amber-400"> · fehlt</span>}
+                {ingredient.offer && <span className="block text-xs text-emerald-700 dark:text-emerald-400">🏷️ {ingredient.offer}</span>}
                 {ingredient.status === "grundvorrat" && <span className="text-sm text-stone-500"> · Grundvorrat</span>}
               </span>
             </li>

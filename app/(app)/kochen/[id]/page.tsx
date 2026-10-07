@@ -7,7 +7,9 @@ import { check } from "@/lib/data/basics";
 import { toRecipe } from "@/lib/data/cooking";
 import { createClient } from "@/lib/supabase/server";
 import { loadPreferences } from "@/lib/data/cooking";
+import { loadOffers } from "@/lib/data/offers";
 import { loadPlan } from "@/lib/data/plan";
+import { bestOffer, offerShortLabel } from "@/lib/offers/offers";
 import { addDays, todayInBerlin } from "@/lib/dates";
 import { formatDayShort, SLOT_LABELS } from "@/lib/plan/week";
 import { addMissingToShopping, addRecipeToPlan, deleteRecipe, generateSteps, setRating, toggleFavorite } from "../actions";
@@ -28,10 +30,11 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/k
   if (!row) notFound();
   const recipe = toRecipe(row);
   const today = todayInBerlin();
-  const [pantryRows, prefs, upcoming] = await Promise.all([
+  const [pantryRows, prefs, upcoming, offers] = await Promise.all([
     supabase.from("pantry_items").select("id, name").eq("status", "da"),
     loadPreferences(supabase),
     loadPlan(supabase, today, addDays(today, 13)),
+    loadOffers(supabase),
   ]);
   const pantry = check(pantryRows, "Vorrat laden");
 
@@ -100,12 +103,17 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/k
       <IngredientsPanel
         recipeId={recipe.id}
         baseServings={recipe.servings}
-        ingredients={recipe.ingredients.map((ingredient) => ({
-          name: ingredient.name,
-          amount: ingredient.amount,
-          unit: ingredient.unit,
-          status: ingredientStatus(ingredient, pantry),
-        }))}
+        ingredients={recipe.ingredients.map((ingredient) => {
+          const status = ingredientStatus(ingredient, pantry);
+          const offer = status === "fehlt" ? bestOffer(ingredient.name, offers, today) : null;
+          return {
+            name: ingredient.name,
+            amount: ingredient.amount,
+            unit: ingredient.unit,
+            status,
+            offer: offer ? offerShortLabel(offer, today) : null,
+          };
+        })}
         addMissing={addMissingToShopping.bind(null, recipe.id)}
         hasSteps={recipe.steps.length > 0}
       />

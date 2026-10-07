@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { InstallButton } from "../../install-button";
 import { logout } from "../../login/actions";
 import { addEntry, deleteEntry, moveEntry, updateEntry } from "./actions";
+import { addStore, deleteStore, savePlz, updateStore } from "./markets-actions";
+import { loadPreferences } from "@/lib/data/cooking";
+import { loadStores } from "@/lib/data/offers";
 
 export const metadata: Metadata = { title: "Einstellungen" };
 
@@ -13,6 +16,7 @@ const ERRORS: Record<string, string> = {
   doppelt: "Diesen Namen gibt es schon.",
   name: "Bitte einen Namen eingeben (höchstens 60 Zeichen).",
   speichern: "Speichern hat nicht geklappt. Bitte versuch es noch einmal.",
+  markt: "Bitte einen Namen (höchstens 40 Zeichen) und als Link nur eine https-Adresse eingeben.",
 };
 
 // Kleine Pfeil-Knöpfe zum Sortieren
@@ -119,8 +123,12 @@ function AddForm({ table, placeholder }: { table: "categories" | "locations"; pl
 export default async function SettingsPage({ searchParams }: PageProps<"/einstellungen">) {
   const { fehler } = await searchParams;
   const supabase = await createClient();
-  const { categories, locations } = await loadBasics(supabase);
-  const { data: claims } = await supabase.auth.getClaims();
+  const [{ categories, locations }, { data: claims }, stores, prefs] = await Promise.all([
+    loadBasics(supabase),
+    supabase.auth.getClaims(),
+    loadStores(supabase),
+    loadPreferences(supabase),
+  ]);
 
   const locationName = new Map(locations.map((location) => [location.id, location.name]));
   const byAisle = [...categories].sort((a, b) => a.aisle_order - b.aisle_order);
@@ -142,6 +150,50 @@ export default async function SettingsPage({ searchParams }: PageProps<"/einstel
         </span>
         <span aria-hidden>→</span>
       </Link>
+
+      <section className={`${card} flex flex-col gap-2`}>
+        <h2 className="text-lg font-semibold">Märkte & Prospekte</h2>
+        <p className="text-sm text-stone-500">Der Link führt zur Prospekt-Seite des Markts (unter Einkauf → Angebote).</p>
+        <ul className="divide-y divide-stone-200 dark:divide-stone-700">
+          {stores.map((store) => (
+            <li key={store.id} className="py-2">
+              <details>
+                <summary className="cursor-pointer py-1.5">
+                  🏪 {store.name}
+                  {store.flyer_url && <span className="text-sm text-stone-500"> · mit Link</span>}
+                </summary>
+                <form action={updateStore.bind(null, store.id)} className="mt-2 flex flex-col gap-2">
+                  <input name="name" defaultValue={store.name} required maxLength={40} aria-label="Name" className={input} />
+                  <input name="flyer_url" type="url" defaultValue={store.flyer_url ?? ""} placeholder="https://… (Prospekt-Seite)" aria-label="Prospekt-Link" className={input} />
+                  <button type="submit" className={buttonSecondary}>
+                    Speichern
+                  </button>
+                </form>
+                <form action={deleteStore.bind(null, store.id)} className="mt-2">
+                  <button type="submit" className={`${buttonDanger} w-full`}>
+                    „{store.name}“ samt Angeboten löschen
+                  </button>
+                </form>
+              </details>
+            </li>
+          ))}
+        </ul>
+        <form action={addStore} className="flex gap-2">
+          <input name="name" required maxLength={40} placeholder="Neuer Markt" aria-label="Neuer Markt" className={input} />
+          <button type="submit" className={buttonPrimary} aria-label="Markt hinzufügen">
+            +
+          </button>
+        </form>
+        <form action={savePlz} className="flex items-end gap-2 border-t border-stone-200 pt-3 dark:border-stone-700">
+          <label className="flex flex-1 flex-col gap-1">
+            <span className={label}>PLZ oder Ort (Angebote sind regional)</span>
+            <input name="plz" defaultValue={prefs.plz ?? "Kaiserslautern"} maxLength={40} className={input} />
+          </label>
+          <button type="submit" className={buttonSecondary}>
+            Speichern
+          </button>
+        </form>
+      </section>
 
       <section className={card}>
         <h2 className="text-lg font-semibold">Kategorien</h2>
