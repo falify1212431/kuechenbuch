@@ -1,6 +1,7 @@
 // Meine Vorlieben: Startwerte („Meine Angaben“ aus der SPEC) und Prüfung des Formulars.
 
 import { z } from "zod";
+import { SLOTS, type Slot } from "@/lib/plan/week";
 
 export const DIETS = ["alles", "vegetarisch", "vegan", "pescetarisch", "flexitarisch"] as const;
 export type Diet = (typeof DIETS)[number];
@@ -26,6 +27,8 @@ export interface Preferences {
   budget_week: number | null;
   appliances: string[];
   staples: string[];
+  /** Welche Mahlzeiten der Wochenplan füllt */
+  meal_slots: Slot[];
 }
 
 /** Startwerte aus der SPEC, abgesprochen am 07.10.2026 */
@@ -43,6 +46,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   budget_week: 80,
   appliances: [...APPLIANCE_OPTIONS],
   staples: ["Salz", "Pfeffer", "Öl", "Zucker", "Mehl", "Essig", "Gemüsebrühe", "Paprikapulver", "getrocknete Kräuter"],
+  // Absprache 07.10.2026: jeden Tag nur das Abendessen als Hauptgericht planen
+  meal_slots: ["abend"],
 };
 
 /**
@@ -60,6 +65,12 @@ export function parseList(checked: string[], text = ""): string[] {
       return true;
     })
     .slice(0, 40);
+}
+
+/** Mahlzeiten aus dem Formular; mindestens eine, sonst Abend */
+export function parseSlots(values: string[]): Slot[] {
+  const slots = SLOTS.filter((slot) => values.includes(slot));
+  return slots.length > 0 ? slots : ["abend"];
 }
 
 /** Erdnuss muss immer in den Allergien stehen – egal was im Formular ankommt */

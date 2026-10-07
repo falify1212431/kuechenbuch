@@ -189,7 +189,7 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | `shelf_life_rules` | category_id, location_id und/oder keyword, days_closed, days_opened – für Schätzungen; die genaueste passende Regel gewinnt |
 | `shopping_items` | name, quantity, unit, category_id, checked, source (`hand` / `nachkaufen` / `plan` / `rezept` / `angebot`), offer_id |
 | `recipes` | title, summary, servings, minutes, difficulty, ingredients (JSON), steps (JSON, mit Timer-Minuten), meal_prep (JSON), source (`ki` / `manuell`), rating (1 / -1), favorite, cooked_count, last_cooked_at, suggested_at + suggestion_rank (KI-Vorschläge, unbenutzte werden nach 7 Tagen gelöscht) |
-| `meal_plan` | date, slot (`mittag` / `abend`), recipe_id oder freier Text, cooked |
+| `meal_plan` | date, slot (`mittag` / `abend`), recipe_id oder free_text oder leftovers_recipe_id (Reste, Meal-Prep) oder skip (frei/auswärts), cooked; pro Tag und Mahlzeit ein Eintrag. Welche Mahlzeiten geplant werden, steht in `preferences.meal_slots` (Start: nur Abend, geklärt am 07.10.2026) |
 | `stores` / `offers` | store, product, brand, price, unit_price, discount, valid_from, valid_to, flyer_upload_id |
 | `preferences` | diet, diet_notes, allergies[], dislikes[], cuisines[], goals[], servings, max_minutes_weekday, max_minutes_weekend, budget_week, appliances[], staples[] (aisle_order steht seit Phase 1 an den Kategorien; briefing_time kommt in Phase 6) |
 | `api_tokens` | token_hash, label, created_at, last_used_at – für den Daily-Bot |
@@ -201,7 +201,7 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | `GET /api/products/:ean` | Barcode → erst eigener Cache, dann Open Food Facts |
 | `POST /api/scan` | Bild + Modus (`datum` / `produkt` / `lose-ware` / `kassenbon`) → erkannte Einträge als JSON zum Bestätigen |
 | `POST /api/ai/suggest` | Kochvorschläge aus Vorrat, Vorlieben, Angeboten, Wunsch (umgesetzt in Phase 3 als Server-Aktion `suggestRecipes` in `app/(app)/kochen/actions.ts`) |
-| `POST /api/ai/plan-week` | Wochenplan + daraus resultierende Einkaufsliste |
+| `POST /api/ai/plan-week` | Wochenplan + daraus resultierende Einkaufsliste (umgesetzt in Phase 4 als Server-Aktionen `planWeek`/`rerollDay` in `app/(app)/plan/actions.ts`; die KI liefert nur Gerichte + Zutaten, die Zubereitung wird pro Gericht per Knopf nachgeholt) |
 | `POST /api/offers/import` | Prospekt-PDF oder -Fotos → Angebote zum Durchsehen |
 | `GET /api/briefing?format=text\|json` | Morgen-Briefing, Auth per `Authorization: Bearer <token>` |
 

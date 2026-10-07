@@ -18,7 +18,7 @@ Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Log
 
 ## Code-Struktur
 
-- `app/(app)/…`: Bereiche nach dem Login (vorrat, kochen, scan, einkauf, einstellungen inkl. vorlieben) mit Navigationsleiste; `actions.ts` je Bereich = Server-Aktionen, Eingaben mit zod geprüft
+- `app/(app)/…`: Bereiche nach dem Login (vorrat, kochen, plan, scan, einkauf, einstellungen inkl. vorlieben) mit Navigationsleiste; Wochenplan und Rezeptbuch hängen unter dem Reiter „Kochen“ (`kochen/cook-tabs.tsx`); `actions.ts` je Bereich = Server-Aktionen, Eingaben mit zod geprüft
 - `app/login`, `app/auth/confirm`: Login per Mail-Link; `proxy.ts` schützt alle anderen Seiten
 - `lib/` reine Logik mit Tests daneben (`*.test.ts`): `dates`, `pantry/` (Ablauf, Schätzung, Mengen, Gruppierung), `shopping/`, `order`, `text`
 - `lib/data/`: Laden aus Supabase (`loadBasics` legt beim ersten Besuch die Startwerte per `ensure_defaults()` an)
@@ -27,6 +27,7 @@ Next.js (App Router) + TypeScript + Tailwind als PWA · Supabase (Datenbank, Log
 - `lib/ai/`: KI-Schnittstelle (`askJson` mit zod, Tageslimit per `consume_ai_quota`, Anbieter in `groq.ts`); `lib/scan/`: Aufgaben und Nachbearbeitung fürs Scannen
 - `lib/allergens/peanut.ts`: Erdnuss-Check für Produkte; `lib/allergens/blocklist.ts`: Sperrliste für Rezepte (Erdnuss, Kokos, eingelegter Fisch, Matjes, Sardellen + eigene Begriffe). Beide streng, im Zweifel warnen bzw. verwerfen – jede Änderung braucht Tests
 - `lib/cooking/`: Kochen mit KI (`suggest.ts` Prompt + Nachbearbeitung/Sortierung, `ingredients.ts` Umrechnen/Grundvorrat, `consume.ts` „Gekocht“, `preferences.ts` Startwerte); `lib/data/cooking.ts` lädt Vorlieben und Rezepte
+- `lib/plan/`: Wochenplan (`week.ts` Wochen/Plätze, `move.ts` Verschieben/Tauschen, `shopping.ts` Einkauf aus dem Plan, `thaw.ts` Auftau-Hinweis, `ai-plan.ts` KI-Wochenplan und Zubereitung); `lib/data/plan.ts` lädt Plan und Auftau-Hinweise
 - `app/api/products/[ean]` (Barcode → Cache → Open Food Facts), `app/api/scan` (Foto → KI); Fotos werden nie gespeichert
 
 ## Befehle

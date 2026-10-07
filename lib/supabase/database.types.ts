@@ -106,6 +106,63 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_plan: {
+        Row: {
+          cooked: boolean
+          created_at: string
+          date: string
+          free_text: string | null
+          household_id: string | null
+          id: string
+          leftovers_recipe_id: string | null
+          recipe_id: string | null
+          skip: boolean
+          slot: string
+          user_id: string
+        }
+        Insert: {
+          cooked?: boolean
+          created_at?: string
+          date: string
+          free_text?: string | null
+          household_id?: string | null
+          id?: string
+          leftovers_recipe_id?: string | null
+          recipe_id?: string | null
+          skip?: boolean
+          slot: string
+          user_id?: string
+        }
+        Update: {
+          cooked?: boolean
+          created_at?: string
+          date?: string
+          free_text?: string | null
+          household_id?: string | null
+          id?: string
+          leftovers_recipe_id?: string | null
+          recipe_id?: string | null
+          skip?: boolean
+          slot?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_leftovers_recipe_id_fkey"
+            columns: ["leftovers_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pantry_items: {
         Row: {
           allergen_warning: string | null
@@ -200,6 +257,7 @@ export type Database = {
           household_id: string | null
           max_minutes_weekday: number
           max_minutes_weekend: number
+          meal_slots: string[]
           servings: number
           staples: string[]
           updated_at: string
@@ -217,6 +275,7 @@ export type Database = {
           household_id?: string | null
           max_minutes_weekday?: number
           max_minutes_weekend?: number
+          meal_slots?: string[]
           servings?: number
           staples?: string[]
           updated_at?: string
@@ -234,6 +293,7 @@ export type Database = {
           household_id?: string | null
           max_minutes_weekday?: number
           max_minutes_weekend?: number
+          meal_slots?: string[]
           servings?: number
           staples?: string[]
           updated_at?: string

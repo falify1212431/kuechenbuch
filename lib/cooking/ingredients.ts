@@ -108,7 +108,7 @@ export function findPantryMatch<T extends { name: string }>(name: string, pantry
 }
 
 /** Grobe Grundform: „Zwiebeln“/„Zwiebel“ → „zwiebel“, „Tomaten“/„Tomate“ → „tomat“ */
-function stem(word: string): string {
+export function stem(word: string): string {
   return word.replace(/(en|n|e|s)$/, "");
 }
 
@@ -139,4 +139,15 @@ export function toShoppingLine(
   if (ingredient.unit === "Zehe") return { name: ingredient.name, quantity: 1, unit: "Stück" };
   if (!ingredient.unit && amount !== null && amount > 0) return { name: ingredient.name, quantity: amount, unit: "Stück" };
   return { name: ingredient.name, quantity: 1, unit: "Packung" };
+}
+
+/** Vergleichsschlüssel für Zutatennamen: „Zwiebeln“ und „zwiebel“ ergeben dasselbe */
+export function nameKey(name: string): string {
+  return stem(normalizeName(name));
+}
+
+/** Kommt bei toShoppingLine eine echte Menge heraus (und nicht nur „1 Packung“ für ein paar Löffel)? */
+export function isExactShoppingAmount(ingredient: Pick<RecipeIngredient, "amount" | "unit">): boolean {
+  if (ingredient.amount === null || ingredient.amount <= 0) return false;
+  return ingredient.unit === null || SHOPPING_UNITS[ingredient.unit] !== null;
 }

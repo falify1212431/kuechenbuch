@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PREFERENCES, parseList, preferencesFormSchema, withFixedAllergy } from "./preferences";
+import { DEFAULT_PREFERENCES, parseList, parseSlots, preferencesFormSchema, withFixedAllergy } from "./preferences";
 
 describe("Startwerte", () => {
   it("enthalten die Angaben aus der SPEC", () => {
@@ -61,5 +61,12 @@ describe("preferencesFormSchema", () => {
     expect(preferencesFormSchema.safeParse({ ...valid, max_minutes_weekday: "1000" }).success).toBe(false);
     expect(preferencesFormSchema.safeParse({ ...valid, budget_week: "viel" }).success).toBe(false);
     expect(preferencesFormSchema.safeParse({ ...valid, diet: "carnivor" }).success).toBe(false);
+  });
+});
+
+describe("parseSlots", () => {
+  it("nimmt nur bekannte Mahlzeiten, mindestens Abend", () => {
+    expect(parseSlots(["abend", "mittag", "fruehstueck"])).toEqual(["mittag", "abend"]);
+    expect(parseSlots([])).toEqual(["abend"]);
   });
 });

@@ -1,4 +1,4 @@
-import { DEFAULT_PREFERENCES, DIETS, withFixedAllergy, type Preferences } from "@/lib/cooking/preferences";
+import { DEFAULT_PREFERENCES, DIETS, parseSlots, withFixedAllergy, type Preferences } from "@/lib/cooking/preferences";
 import {
   storedIngredientsSchema,
   storedMealPrepSchema,
@@ -28,6 +28,7 @@ function toPreferences(row: Tables<"preferences">): Preferences {
     budget_week: row.budget_week === null ? null : Number(row.budget_week),
     appliances: row.appliances,
     staples: row.staples,
+    meal_slots: parseSlots(row.meal_slots),
   };
 }
 
@@ -83,12 +84,15 @@ export function toRecipe(row: Tables<"recipes">): Recipe {
 }
 
 /**
- * Räumt alte Vorschläge weg: älter als 7 Tage, nie gekocht, nicht gemerkt, nicht bewertet.
+ * Räumt alte Vorschläge weg: älter als 7 Tage, nie gekocht, nicht gemerkt, nicht bewertet, nicht im Plan.
  * Bewertete mit 👎 bleiben, damit die KI sie nicht wieder vorschlägt.
  */
 export async function cleanupOldSuggestions(supabase: Supabase) {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { error } = await supabase
+  // Was im Wochenplan steht, bleibt
+  const { data: planned } = await supabase.from("meal_plan").select("recipe_id, leftovers_recipe_id");
+  const keep = (planned ?? []).flatMap((row) => [row.recipe_id, row.leftovers_recipe_id]).filter((id): id is string => id !== null);
+  let query = supabase
     .from("recipes")
     .delete()
     .eq("source", "ki")
@@ -96,5 +100,7 @@ export async function cleanupOldSuggestions(supabase: Supabase) {
     .eq("cooked_count", 0)
     .is("rating", null)
     .lt("created_at", weekAgo);
+  if (keep.length > 0) query = query.not("id", "in", `(${[...new Set(keep)].join(",")})`);
+  const { error } = await query;
   if (error) console.error("Alte Vorschläge aufräumen fehlgeschlagen:", error.message);
 }

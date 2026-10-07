@@ -132,27 +132,50 @@ export interface SuggestContext {
   recentTitles: string[];
 }
 
-const list = (items: string[]) => (items.length > 0 ? items.join(", ") : "keine Angabe");
+export const list = (items: string[]) => (items.length > 0 ? items.join(", ") : "keine Angabe");
 
-export function buildSuggestTask(ctx: SuggestContext): { system: string; prompt: string } {
-  const { prefs, filters, today } = ctx;
+/** Wochentag zu einem Datum, z. B. „Mittwoch“ */
+export function weekdayName(isoDate: string): string {
+  return WEEKDAYS[new Date(`${isoDate}T00:00:00Z`).getUTCDay()];
+}
+
+/** Feste Regeln für jede Koch-Anfrage an die KI: Sprache und alle Ausschlüsse */
+export function cookingSystemPrompt(prefs: Pick<Preferences, "allergies" | "dislikes">): string {
   const exclusions = [...FIXED_EXCLUSIONS, ...prefs.allergies, ...prefs.dislikes];
-  const maxMinutes = maxMinutesFor(prefs, filters, today);
-  const weekday = WEEKDAYS[new Date(`${today}T00:00:00Z`).getUTCDay()];
-  const mustUse = ctx.pantry.filter((item) => filters.mustUse.includes(item.id));
-
-  const system = [
+  return [
     "Du bist der Kochassistent einer Küchen-App in Deutschland. Antworte auf Deutsch, mit deutschen Zutatennamen und Einheiten.",
     "HARTE AUSSCHLÜSSE – die Person hat eine sehr starke Erdnussallergie. Folgendes darf in keinem Rezept vorkommen, auch nicht als Deko, Variante oder Tipp.",
     "Erwähne diese Dinge überhaupt nicht, auch nicht verneint (kein „ohne Erdnüsse“):",
     ...exclusions.map((entry) => `- ${entry}`),
     "Verwende keine Fertigsaucen oder Nussmischungen, die oft Erdnuss enthalten.",
   ].join("\n");
+}
 
-  const pantryLines =
-    ctx.pantry.length > 0
-      ? ctx.pantry.map((item) => `#${item.ref} ${item.name} – ${formatQuantity(item.quantity, item.unit)} – ${describeDays(item)}`)
-      : ["(Der Vorrat ist leer.)"];
+/** Vorrat als kurze, nummerierte Liste für die KI */
+export function pantryLines(pantry: AiPantryItem[]): string[] {
+  return pantry.length > 0
+    ? pantry.map((item) => `#${item.ref} ${item.name} – ${formatQuantity(item.quantity, item.unit)} – ${describeDays(item)}`)
+    : ["(Der Vorrat ist leer.)"];
+}
+
+/** Vorlieben als Zeilen für die KI (ohne Portionen und Zeit, die hängen von der Aufgabe ab) */
+export function preferenceLines(prefs: Preferences, likedTitles: string[]): string[] {
+  return [
+    `- Ernährung: ${prefs.diet}${prefs.diet_notes ? ` – ${prefs.diet_notes}` : ""}`,
+    `- Lieblingsküchen: ${list(prefs.cuisines)}`,
+    `- Ziele: ${list(prefs.goals)}`,
+    `- Küchengeräte (nur diese verwenden): ${list(prefs.appliances)}`,
+    ...(prefs.budget_week !== null ? [`- Budget: ca. ${prefs.budget_week} € pro Woche – günstige Zutaten bevorzugen`] : []),
+    ...(likedTitles.length > 0 ? [`- Mag ich besonders (als Anregung): ${likedTitles.join(", ")}`] : []),
+  ];
+}
+
+export function buildSuggestTask(ctx: SuggestContext): { system: string; prompt: string } {
+  const { prefs, filters, today } = ctx;
+  const maxMinutes = maxMinutesFor(prefs, filters, today);
+  const weekday = weekdayName(today);
+  const mustUse = ctx.pantry.filter((item) => filters.mustUse.includes(item.id));
+  const system = cookingSystemPrompt(prefs);
 
   const wishes: string[] = [];
   if (filters.onlyPantry) wishes.push("Nur mit dem, was da ist: Jede Zutat muss aus dem Vorrat oder dem Grundvorrat kommen. Nichts darf fehlen.");
@@ -167,25 +190,20 @@ export function buildSuggestTask(ctx: SuggestContext): { system: string; prompt:
   }
   if (filters.wish) wishes.push(`Wunsch: „${filters.wish}“`);
 
-  const lines: (string | null)[] = [
+  const lines: string[] = [
     `Heute ist ${weekday}, der ${formatDateDe(today)}. Schlage genau ${SUGGESTION_COUNT} verschiedene Gerichte vor.`,
     "",
     "VORRAT (Nummer, Name, Menge, Haltbarkeit). Oben steht, was bald abläuft – das bitte bevorzugt verbrauchen:",
-    ...pantryLines,
+    ...pantryLines(ctx.pantry),
     "",
     `GRUNDVORRAT (immer da, steht nicht im Vorrat): ${list(prefs.staples)}`,
     "",
     "VORLIEBEN:",
-    `- Ernährung: ${prefs.diet}${prefs.diet_notes ? ` – ${prefs.diet_notes}` : ""}`,
-    `- Lieblingsküchen: ${list(prefs.cuisines)}`,
-    `- Ziele: ${list(prefs.goals)}`,
-    `- Küchengeräte (nur diese verwenden): ${list(prefs.appliances)}`,
-    prefs.budget_week !== null ? `- Budget: ca. ${prefs.budget_week} € pro Woche – günstige Zutaten bevorzugen` : null,
+    ...preferenceLines(prefs, ctx.likedTitles),
     filters.mealPrep
       ? `- Portionen: Meal-Prep, also mindestens ${Math.max(4, prefs.servings * 2)} Portionen für mehrere Tage (so viel, wie der Vorrat hergibt)`
       : `- Portionen: ${prefs.servings}`,
     `- Höchstens ${maxMinutes} Minuten insgesamt (Vorbereitung und Kochen)`,
-    ctx.likedTitles.length > 0 ? `- Mag ich besonders (als Anregung): ${ctx.likedTitles.join(", ")}` : null,
     ...(wishes.length > 0 ? ["", "FÜR DIESMAL:", ...wishes.map((wish) => `- ${wish}`)] : []),
     ...(ctx.dislikedTitles.length + ctx.recentTitles.length > 0
       ? ["", `NICHT VORSCHLAGEN (schlecht bewertet oder gerade schon vorgeschlagen): ${[...ctx.dislikedTitles, ...ctx.recentTitles].join(", ")}`]
@@ -200,10 +218,33 @@ export function buildSuggestTask(ctx: SuggestContext): { system: string; prompt:
     "- meal_prep nur bei Meal-Prep-Gerichten: days (Tage im Kühlschrank), storage (lagern/einfrieren), reheat (aufwärmen, z. B. Mikrowelle oder Airfryer). Sonst null.",
   ];
 
-  return { system, prompt: lines.filter((line) => line !== null).join("\n") };
+  return { system, prompt: lines.join("\n") };
 }
 
 // ---------- Nachbearbeitung ----------
+
+export type AiIngredient = z.infer<typeof aiIngredient>;
+export { aiIngredient };
+
+/**
+ * Zutaten der KI mit dem Vorrat verknüpfen: erst über die Nummer (pantry_ref), sonst über den
+ * Namen. Grundvorrat bestimmt unsere eigene Liste, nicht die KI.
+ */
+export function linkIngredients(raw: AiIngredient[], pantry: AiPantryItem[], staples: string[]): RecipeIngredient[] {
+  const byRef = new Map(pantry.map((item) => [item.ref, item]));
+  return raw.map((ingredient) => {
+    const fromRef = ingredient.pantry_ref !== null ? byRef.get(ingredient.pantry_ref) : undefined;
+    const staple = isStaple(ingredient.name, staples);
+    const match = fromRef ?? (staple ? null : findPantryMatch(ingredient.name, pantry));
+    return {
+      name: ingredient.name,
+      amount: ingredient.amount,
+      unit: ingredient.unit,
+      pantryItemId: match?.id ?? null,
+      staple: !match && staple,
+    };
+  });
+}
 
 export interface FinalRecipe {
   title: string;
@@ -249,7 +290,6 @@ export function finalizeSuggestions(raw: (AiRecipe | null)[], ctx: SuggestContex
   // Bei „schnell“ streng, sonst 10 Minuten Spielraum
   const allowedMinutes = filters.quick ? maxMinutes : maxMinutes + 10;
   const disliked = new Set(ctx.dislikedTitles.map(normalizeName));
-  const byRef = new Map(pantry.map((item) => [item.ref, item]));
 
   let blocked = 0;
   let filtered = 0;
@@ -279,18 +319,7 @@ export function finalizeSuggestions(raw: (AiRecipe | null)[], ctx: SuggestContex
       continue;
     }
 
-    const ingredients: RecipeIngredient[] = recipe.ingredients.map((ingredient) => {
-      const fromRef = ingredient.pantry_ref !== null ? byRef.get(ingredient.pantry_ref) : undefined;
-      const staple = isStaple(ingredient.name, prefs.staples);
-      const match = fromRef ?? (staple ? null : findPantryMatch(ingredient.name, pantry));
-      return {
-        name: ingredient.name,
-        amount: ingredient.amount,
-        unit: ingredient.unit,
-        pantryItemId: match?.id ?? null,
-        staple: !match && staple,
-      };
-    });
+    const ingredients = linkIngredients(recipe.ingredients, pantry, prefs.staples);
 
     const missing = ingredients.filter((i) => !i.pantryItemId && !i.staple).length;
     if (filters.onlyPantry && missing > 0) {
