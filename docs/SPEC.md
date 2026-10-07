@@ -272,10 +272,10 @@ Acht Phasen (0–7), jede endet mit einer App, die ich wirklich benutzen kann. E
 
 ### Phase 5 – Prospekte
 
-- [ ] Märkte und PLZ einstellbar
-- [ ] Prospekt-PDF oder Fotos hochladen → Angebote zum Durchsehen → speichern
-- [ ] Angebote erscheinen auf der Einkaufsliste und fließen in Vorschläge und Wochenplan ein
-- [ ] Abgelaufene Angebote verschwinden automatisch
+- [x] Märkte und PLZ einstellbar
+- [x] Prospekt-PDF oder Fotos hochladen → Angebote zum Durchsehen → speichern (automatischer Abruf geprüft und vorerst verworfen, siehe `docs/IDEEN.md`)
+- [x] Angebote erscheinen auf der Einkaufsliste und fließen in Vorschläge und Wochenplan ein
+- [x] Abgelaufene Angebote verschwinden automatisch
 
 ### Phase 6 – Morgen-Briefing
 
@@ -303,7 +303,7 @@ So soll Claude Code mit diesem Dokument arbeiten:
 
 ### Offene Fragen an mich
 
-- [ ] Welcher Daily-Bot? Noch offen. Bis dahin: Schnittstelle + Webhook bauen, Anbindung später.
+- [ ] Welcher Daily-Bot? Noch offen. Stand 07.10.2026: Ich baue den Daily-Bot erst separat; Phase 6 folgt danach, wenn ich ihn mit der App verbinden will.
 - [x] Budget: 80 € pro Woche (geklärt am 07.10.2026)
 - [ ] KI-Schlüssel: Ich lege ihn in Google AI Studio an; Claude Code erklärt mir die Schritte, wenn Phase 2 beginnt.
 - [x] Märkte: Aldi, Lidl, Wasgau
