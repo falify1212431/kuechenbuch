@@ -247,21 +247,21 @@ Acht Phasen (0–7), jede endet mit einer App, die ich wirklich benutzen kann. E
 
 ### Phase 2 – Scannen
 
-- [ ] Barcode-Scan auf iPhone und Android, Treffer über Open Food Facts mit Cache
-- [ ] Erdnuss-Check mit roter/gelber Warnung beim Scan
-- [ ] Datum per Foto erkennen, inkl. MHD/Verbrauchsdatum, mit Korrekturfeld
-- [ ] Lose Ware per Foto (mehrere Sachen auf einem Bild)
-- [ ] Kassenbon per Foto → Liste zum Abhaken, gleicht Einkaufsliste ab
-- [ ] Vom Öffnen des Scanners bis zum gespeicherten Eintrag ≤ 5 Sekunden bei bekanntem Barcode
+- [x] Barcode-Scan auf iPhone und Android, Treffer über Open Food Facts mit Cache (am Android-Handy getestet am 07.10.2026; iPhone mangels Gerät ungetestet, dafür ist die Fallback-Bibliothek `@zxing/browser` eingebaut)
+- [x] Erdnuss-Check mit roter/gelber Warnung beim Scan
+- [x] Datum per Foto erkennen, inkl. MHD/Verbrauchsdatum, mit Korrekturfeld
+- [x] Lose Ware per Foto (mehrere Sachen auf einem Bild)
+- [x] Kassenbon per Foto → Liste zum Abhaken, gleicht Einkaufsliste ab
+- [x] Vom Öffnen des Scanners bis zum gespeicherten Eintrag ≤ 5 Sekunden bei bekanntem Barcode
 
 ### Phase 3 – Vorlieben & Kochen mit KI
 
-- [ ] Einstellungsseite für alle Vorlieben aus Abschnitt 3, vorbelegt mit „Meine Angaben“
-- [ ] „Was kann ich heute kochen?“ mit Filtern, Bald-Ablaufendes zuerst
-- [ ] Rezept-Ansicht mit Koch-Modus (Bildschirm bleibt an, Timer)
-- [ ] „Gekocht“ zieht Zutaten vom Vorrat ab
-- [ ] Sperrlisten-Check auf dem Server: kein Vorschlag mit Erdnuss, Kokos oder eingelegtem Fisch (mit Tests)
-- [ ] Favoriten und Bewertungen
+- [x] Einstellungsseite für alle Vorlieben aus Abschnitt 3, vorbelegt mit „Meine Angaben“
+- [x] „Was kann ich heute kochen?“ mit Filtern, Bald-Ablaufendes zuerst
+- [x] Rezept-Ansicht mit Koch-Modus (Bildschirm bleibt an, Timer)
+- [x] „Gekocht“ zieht Zutaten vom Vorrat ab
+- [x] Sperrlisten-Check auf dem Server: kein Vorschlag mit Erdnuss, Kokos oder eingelegtem Fisch (mit Tests) – zusätzlich Matjes, Sardellen und eigene Begriffe aus den Vorlieben
+- [x] Favoriten und Bewertungen
 
 ### Phase 4 – Essensplan
 
