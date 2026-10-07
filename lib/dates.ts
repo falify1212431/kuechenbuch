@@ -34,3 +34,9 @@ export function formatDateDe(isoDate: string): string {
   const [year, month, day] = isoDate.split("-");
   return `${day}.${month}.${year}`;
 }
+
+/** Samstag oder Sonntag? (für die längere Kochzeit am Wochenende) */
+export function isWeekend(isoDate: string): boolean {
+  const weekday = new Date(toUtc(isoDate)).getUTCDay();
+  return weekday === 0 || weekday === 6;
+}

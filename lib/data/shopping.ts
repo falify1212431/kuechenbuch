@@ -34,3 +34,15 @@ export async function addToShoppingList(
   const { error: insertError } = await supabase.from("shopping_items").insert(entry);
   return { error: insertError?.message, merged: false };
 }
+
+/** Kategorie raten: die vom letzten gleichnamigen Vorrats-Eintrag */
+export async function guessCategoryId(supabase: Supabase, name: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("pantry_items")
+    .select("category_id")
+    .ilike("name", name)
+    .not("category_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  return data?.[0]?.category_id ?? null;
+}

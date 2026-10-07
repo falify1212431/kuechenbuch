@@ -3,8 +3,8 @@
 
 import { z } from "zod";
 
-/** "small" für Kleinkram (Text), "vision" für alles mit Bildern */
-export type AiModel = "small" | "vision";
+/** "small" für Kleinkram, "text" für Rezepte und Pläne, "vision" für alles mit Bildern */
+export type AiModel = "small" | "text" | "vision";
 
 export interface AiImage {
   mimeType: string;
@@ -18,6 +18,8 @@ export interface AiRequest {
   /** Die eigentliche Aufgabe */
   prompt: string;
   images?: AiImage[];
+  /** 0 = immer gleich (Erkennen), höher = abwechslungsreicher (Rezepte). Standard 0,1 */
+  temperature?: number;
 }
 
 /** Ein KI-Anbieter muss nur eins können: auf eine Anfrage mit JSON-Text antworten */

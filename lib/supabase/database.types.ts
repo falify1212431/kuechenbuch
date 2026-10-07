@@ -187,6 +187,60 @@ export type Database = {
           },
         ]
       }
+      preferences: {
+        Row: {
+          allergies: string[]
+          appliances: string[]
+          budget_week: number | null
+          cuisines: string[]
+          diet: string
+          diet_notes: string
+          dislikes: string[]
+          goals: string[]
+          household_id: string | null
+          max_minutes_weekday: number
+          max_minutes_weekend: number
+          servings: number
+          staples: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allergies?: string[]
+          appliances?: string[]
+          budget_week?: number | null
+          cuisines?: string[]
+          diet?: string
+          diet_notes?: string
+          dislikes?: string[]
+          goals?: string[]
+          household_id?: string | null
+          max_minutes_weekday?: number
+          max_minutes_weekend?: number
+          servings?: number
+          staples?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          allergies?: string[]
+          appliances?: string[]
+          budget_week?: number | null
+          cuisines?: string[]
+          diet?: string
+          diet_notes?: string
+          dislikes?: string[]
+          goals?: string[]
+          household_id?: string | null
+          max_minutes_weekday?: number
+          max_minutes_weekend?: number
+          servings?: number
+          staples?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           allergens: string[] | null
@@ -254,6 +308,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recipes: {
+        Row: {
+          cooked_count: number
+          created_at: string
+          difficulty: string
+          favorite: boolean
+          household_id: string | null
+          id: string
+          ingredients: Json
+          last_cooked_at: string | null
+          meal_prep: Json | null
+          minutes: number
+          rating: number | null
+          servings: number
+          source: string
+          steps: Json
+          suggested_at: string | null
+          suggestion_rank: number | null
+          summary: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cooked_count?: number
+          created_at?: string
+          difficulty: string
+          favorite?: boolean
+          household_id?: string | null
+          id?: string
+          ingredients: Json
+          last_cooked_at?: string | null
+          meal_prep?: Json | null
+          minutes: number
+          rating?: number | null
+          servings: number
+          source?: string
+          steps: Json
+          suggested_at?: string | null
+          suggestion_rank?: number | null
+          summary?: string | null
+          title: string
+          user_id?: string
+        }
+        Update: {
+          cooked_count?: number
+          created_at?: string
+          difficulty?: string
+          favorite?: boolean
+          household_id?: string | null
+          id?: string
+          ingredients?: Json
+          last_cooked_at?: string | null
+          meal_prep?: Json | null
+          minutes?: number
+          rating?: number | null
+          servings?: number
+          source?: string
+          steps?: Json
+          suggested_at?: string | null
+          suggestion_rank?: number | null
+          summary?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       shelf_life_rules: {
         Row: {

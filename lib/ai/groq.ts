@@ -6,9 +6,12 @@ import { AiRateLimitError, type AiProvider, type AiRequest } from "./core";
 const URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // Welche Modelle genutzt werden, steht in den Umgebungsvariablen (austauschbar ohne Code-Änderung)
+const MODEL_VARIABLES = { small: "AI_MODEL_SMALL", text: "AI_MODEL_TEXT", vision: "AI_MODEL_VISION" } as const;
+
 function modelFor(kind: AiRequest["model"]): string {
-  const model = kind === "vision" ? process.env.AI_MODEL_VISION : process.env.AI_MODEL_SMALL;
-  if (!model) throw new Error(`Umgebungsvariable ${kind === "vision" ? "AI_MODEL_VISION" : "AI_MODEL_SMALL"} fehlt`);
+  // Ohne eigenes Text-Modell wird das kleine genommen
+  const model = process.env[MODEL_VARIABLES[kind]] ?? (kind === "text" ? process.env.AI_MODEL_SMALL : undefined);
+  if (!model) throw new Error(`Umgebungsvariable ${MODEL_VARIABLES[kind]} fehlt`);
   return model;
 }
 
@@ -17,27 +20,35 @@ export const groqProvider: AiProvider = {
     const key = process.env.GROQ_API_KEY;
     if (!key) throw new Error("Umgebungsvariable GROQ_API_KEY fehlt");
 
-    const content = [
-      { type: "text", text: request.prompt },
-      ...(request.images ?? []).map((image) => ({
-        type: "image_url",
-        image_url: { url: `data:${image.mimeType};base64,${image.base64}` },
-      })),
-    ];
+    // Nur-Text-Modelle wollen einfachen Text, Bild-Modelle eine Liste aus Text und Bildern
+    const images = request.images ?? [];
+    const content =
+      images.length === 0
+        ? request.prompt
+        : [
+            { type: "text", text: request.prompt },
+            ...images.map((image) => ({
+              type: "image_url",
+              image_url: { url: `data:${image.mimeType};base64,${image.base64}` },
+            })),
+          ];
 
+    const model = modelFor(request.model);
     const response = await fetch(URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: modelFor(request.model),
+        model,
         messages: [
           { role: "system", content: request.system },
           { role: "user", content },
         ],
         response_format: { type: "json_object" },
-        temperature: 0.1,
+        temperature: request.temperature ?? 0.1,
+        // Die gpt-oss-Modelle „denken“ vor der Antwort; wenig Denken = schneller und spart Gratis-Kontingent
+        ...(model.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {}),
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(60000),
     });
 
     if (response.status === 429) throw new AiRateLimitError("Groq: zu viele Anfragen");

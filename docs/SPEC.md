@@ -85,7 +85,7 @@ Alles hier fließt in die KI-Vorschläge und den Essensplan ein:
 | --- | --- |
 | Ernährung | ausgewogen und gesund, möglichst naturbelassen; Bio/naturbelassene Produkte bevorzugen (z. B. Aldi „Nur Nur Natur“) |
 | Allergie | **Erdnuss, sehr stark** – harter Ausschluss, auch Erdnussöl, Erdnussbutter, Erdnusssauce, Saté |
-| Mag ich nicht | saurer/eingelegter Fisch (z. B. Rollmops, Bismarckhering); Kokos in jeder Form (Kokosmilch, -öl, -raspeln) |
+| Mag ich nicht | saurer/eingelegter Fisch (z. B. Rollmops, Bismarckhering, Brathering), auch Matjes und Sardellen/Anchovis; gebeizter Lachs ist okay (geklärt am 07.10.2026); Kokos in jeder Form (Kokosmilch, -öl, -raspeln) |
 | Budget | ca. 80 € pro Woche als Obergrenze |
 | Portionen | flexibel: lieber größer für Meal-Prep, je nachdem wie viel vom Vorrat da ist |
 | Geräte | Backofen, Herd, Mikrowelle, Ninja Double Stack Airfryer, Mixer |
@@ -171,7 +171,7 @@ Die Handy-App spricht nur mit dem eigenen Server; der Server ruft Supabase, den 
 | Oberfläche | Tailwind CSS, Komponenten selbst gebaut oder shadcn/ui | Schnell, konsistent, Dark Mode |
 | Daten & Login | Supabase (Postgres, Auth, Storage) | Login, Datenbank mit Zeilenrechten und Fotospeicher in einem |
 | Geplante Jobs | Supabase Cron oder Vercel Cron | Morgen-Briefing, Aufräumen abgelaufener Angebote |
-| KI | Gemini API (Google), kostenloses Kontingent, mit Bildeingabe; Anbieter austauschbar. **Entscheidung Phase 2:** vorerst Groq (kostenloser Tarif, Bilder mit `qwen/qwen3.8-27b`), weil AI Studio nicht erreichbar war; Wechsel zu Gemini über `AI_PROVIDER` | Datum lesen, Produkte/Bons/Prospekte erkennen, Rezepte, Wochenplan |
+| KI | Gemini API (Google), kostenloses Kontingent, mit Bildeingabe; Anbieter austauschbar. **Entscheidung Phase 2:** vorerst Groq (kostenloser Tarif, Bilder mit `qwen/qwen3.8-27b`, Rezepte ab Phase 3 mit `openai/gpt-oss-120b`), weil AI Studio nicht erreichbar war; Wechsel zu Gemini über `AI_PROVIDER` | Datum lesen, Produkte/Bons/Prospekte erkennen, Rezepte, Wochenplan |
 | Produktdaten | Open Food Facts API | Kostenlos, deutsche Produkte gut abgedeckt |
 | Barcode | `@zxing/browser` (Fallback), `BarcodeDetector` wo vorhanden | Läuft auch auf iPhone |
 | Hosting | Vercel (App) + Supabase (Daten) | Beides kostenlos: Vercel Hobby für private Projekte, Supabase Free (500 MB Datenbank, 1 GB Speicher) |
@@ -188,10 +188,10 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | `categories` / `locations` | name, sort_order, icon; Kategorien zusätzlich default_location_id (typischer Lagerort) und aisle_order (Laden-Reihenfolge) |
 | `shelf_life_rules` | category_id, location_id und/oder keyword, days_closed, days_opened – für Schätzungen; die genaueste passende Regel gewinnt |
 | `shopping_items` | name, quantity, unit, category_id, checked, source (`hand` / `nachkaufen` / `plan` / `rezept` / `angebot`), offer_id |
-| `recipes` | title, servings, minutes, ingredients (JSON), steps (JSON), source (`ki` / `manuell`), rating, favorite |
+| `recipes` | title, summary, servings, minutes, difficulty, ingredients (JSON), steps (JSON, mit Timer-Minuten), meal_prep (JSON), source (`ki` / `manuell`), rating (1 / -1), favorite, cooked_count, last_cooked_at, suggested_at + suggestion_rank (KI-Vorschläge, unbenutzte werden nach 7 Tagen gelöscht) |
 | `meal_plan` | date, slot (`mittag` / `abend`), recipe_id oder freier Text, cooked |
 | `stores` / `offers` | store, product, brand, price, unit_price, discount, valid_from, valid_to, flyer_upload_id |
-| `preferences` | diet, allergies[], dislikes[], cuisines[], goals[], servings, max_minutes_weekday, max_minutes_weekend, budget_week, appliances[], staples[], aisle_order[], briefing_time |
+| `preferences` | diet, diet_notes, allergies[], dislikes[], cuisines[], goals[], servings, max_minutes_weekday, max_minutes_weekend, budget_week, appliances[], staples[] (aisle_order steht seit Phase 1 an den Kategorien; briefing_time kommt in Phase 6) |
 | `api_tokens` | token_hash, label, created_at, last_used_at – für den Daily-Bot |
 
 ### Server-Schnittstellen
@@ -200,7 +200,7 @@ Alle Tabellen haben `user_id` (und `household_id` für später) und Row Level Se
 | --- | --- |
 | `GET /api/products/:ean` | Barcode → erst eigener Cache, dann Open Food Facts |
 | `POST /api/scan` | Bild + Modus (`datum` / `produkt` / `lose-ware` / `kassenbon`) → erkannte Einträge als JSON zum Bestätigen |
-| `POST /api/ai/suggest` | Kochvorschläge aus Vorrat, Vorlieben, Angeboten, Wunsch |
+| `POST /api/ai/suggest` | Kochvorschläge aus Vorrat, Vorlieben, Angeboten, Wunsch (umgesetzt in Phase 3 als Server-Aktion `suggestRecipes` in `app/(app)/kochen/actions.ts`) |
 | `POST /api/ai/plan-week` | Wochenplan + daraus resultierende Einkaufsliste |
 | `POST /api/offers/import` | Prospekt-PDF oder -Fotos → Angebote zum Durchsehen |
 | `GET /api/briefing?format=text\|json` | Morgen-Briefing, Auth per `Authorization: Bearer <token>` |
@@ -304,7 +304,7 @@ So soll Claude Code mit diesem Dokument arbeiten:
 ### Offene Fragen an mich
 
 - [ ] Welcher Daily-Bot? Noch offen. Bis dahin: Schnittstelle + Webhook bauen, Anbindung später.
-- [ ] Budget: Sind die 80 € pro Woche gemeint (Annahme) oder pro Monat?
+- [x] Budget: 80 € pro Woche (geklärt am 07.10.2026)
 - [ ] KI-Schlüssel: Ich lege ihn in Google AI Studio an; Claude Code erklärt mir die Schritte, wenn Phase 2 beginnt.
 - [x] Märkte: Aldi, Lidl, Wasgau
 - [x] Ernährung, Allergie, No-Gos, Portionen, Geräte: siehe „Meine Angaben“

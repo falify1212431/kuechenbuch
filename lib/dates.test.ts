@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, daysBetween, formatDateDe, todayInBerlin } from "./dates";
+import { addDays, daysBetween, formatDateDe, isWeekend, todayInBerlin } from "./dates";
 
 describe("todayInBerlin", () => {
   it("nimmt die deutsche Zeit, nicht die Weltzeit", () => {
@@ -32,5 +32,14 @@ describe("addDays und daysBetween", () => {
 describe("formatDateDe", () => {
   it("zeigt Daten als TT.MM.JJJJ", () => {
     expect(formatDateDe("2026-10-05")).toBe("05.10.2026");
+  });
+});
+
+describe("isWeekend", () => {
+  it("erkennt Samstag und Sonntag", () => {
+    expect(isWeekend("2026-10-10")).toBe(true); // Samstag
+    expect(isWeekend("2026-10-11")).toBe(true); // Sonntag
+    expect(isWeekend("2026-10-12")).toBe(false); // Montag
+    expect(isWeekend("2026-10-09")).toBe(false); // Freitag
   });
 });
