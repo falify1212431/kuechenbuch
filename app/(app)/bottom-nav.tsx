@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/vorrat", label: "Vorrat", icon: "🥫" },
-  { href: "/einkauf", label: "Einkauf", icon: "🛒" },
+  { href: "/kochen", label: "Kochen", icon: "🍳" },
   { href: "/scan", label: "Scannen", icon: "📷", big: true },
-  { href: "/einstellungen", label: "Einstellungen", icon: "⚙️" },
+  { href: "/einkauf", label: "Einkauf", icon: "🛒" },
+  { href: "/einstellungen", label: "Mehr", icon: "⚙️" },
 ];
 
 // Die Leiste unten: immer mit dem Daumen erreichbar, der Scan-Knopf groß in der Mitte

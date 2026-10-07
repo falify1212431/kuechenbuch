@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { buttonDanger, buttonPrimary, buttonSecondary, card, errorBox, input, label } from "@/components/styles";
 import { loadBasics, type Category, type Location } from "@/lib/data/basics";
 import { createClient } from "@/lib/supabase/server";
@@ -133,6 +134,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/einstel
           {ERRORS[fehler]}
         </p>
       )}
+
+      <Link href="/einstellungen/vorlieben" className={`${card} flex items-center justify-between`}>
+        <span>
+          <span className="block text-lg font-semibold">🍽️ Vorlieben fürs Kochen</span>
+          <span className="text-sm text-stone-500">Allergien, mag ich nicht, Geräte, Grundvorrat …</span>
+        </span>
+        <span aria-hidden>→</span>
+      </Link>
 
       <section className={card}>
         <h2 className="text-lg font-semibold">Kategorien</h2>

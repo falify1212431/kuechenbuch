@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { addToShoppingList } from "@/lib/data/shopping";
+import { addToShoppingList, guessCategoryId } from "@/lib/data/shopping";
 import { todayInBerlin } from "@/lib/dates";
 import { UNITS } from "@/lib/pantry/quantity";
 import { estimateDate, matchShelfLife } from "@/lib/pantry/shelf-life";
@@ -34,17 +34,7 @@ export async function addShoppingItem(previous: FormState, formData: FormData): 
   const supabase = await createClient();
 
   // Keine Kategorie gewählt? Dann die vom letzten gleichnamigen Vorrats-Eintrag nehmen.
-  let categoryId = values.category_id;
-  if (!categoryId) {
-    const { data } = await supabase
-      .from("pantry_items")
-      .select("category_id")
-      .ilike("name", values.name)
-      .not("category_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    categoryId = data?.[0]?.category_id ?? null;
-  }
+  const categoryId = values.category_id ?? (await guessCategoryId(supabase, values.name));
 
   const result = await addToShoppingList(supabase, { ...values, category_id: categoryId, source: "hand" });
   if (result.error) return { error: `Speichern hat nicht geklappt: ${result.error}` };
